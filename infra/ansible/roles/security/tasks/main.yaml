@@ -1,0 +1,31 @@
+---
+- name: Installer ma clé SSH publique
+  authorized_key:
+    user: "{{ ansible_user }}"
+    state: present
+    key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+- name: Sécuriser SSH (Désactiver mot de passe après succès)
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PasswordAuthentication'
+    line: 'PasswordAuthentication no'
+  notify: Restart SSH
+  become: yes
+
+# - name: Ouvrir les ports vitaux (UFW) sans bloquer Docker
+#   ufw:
+#     rule: allow
+#     port: "{{ item }}"
+#     proto: tcp
+#   loop:
+#     - '22'    # SSH
+#     - '6443'  # API K3s (Nouveau)
+#     - '80'    # Déjà utilisé par Nginx
+#     - '443'   # Déjà utilisé par Nginx
+#   become: yes
+
+- name: Désactiver UFW pour laisser tous les ports ouverts
+  ufw:
+    state: disabled
+  become: yes

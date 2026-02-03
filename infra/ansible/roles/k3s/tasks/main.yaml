@@ -1,0 +1,19 @@
+---
+- name: Vérifier si K3s est déjà installé
+  stat:
+    path: /usr/local/bin/k3s
+  register: k3s_bin
+
+- name: Installation de K3s avec évitement de conflits
+  shell: |
+    curl -sfL https://get.k3s.io | sh -s - server \
+    --disable traefik \
+    --disable servicelb \
+    --write-kubeconfig-mode 644 \
+    --node-name travel-node-1
+  when: not k3s_bin.stat.exists
+  become: yes
+
+- name: Attendre que le node soit prêt
+  command: k3s kubectl get nodes
+  changed_when: false

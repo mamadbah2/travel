@@ -1,0 +1,13 @@
+---
+- name: Provisioning VPS Travel
+  hosts: all
+  roles:
+    - security
+    - k3s
+
+  handlers:
+    - name: Restart SSH
+      service:
+        name: ssh
+        state: restarted
+      become: yes
