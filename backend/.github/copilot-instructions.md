@@ -160,3 +160,9 @@ Ces données alimentent Elasticsearch et Neo4j.
 
 ---
 
+## 8. Gestion des exceptions
+- Crée des exceptions personnalisées pour les erreurs métier (e.g., `TravelNotFoundException`, `UnauthorizedAccessException`).
+- Utilise un gestionnaire global d'exceptions avec `@ControllerAdvice` pour formater les réponses d'erreur de manière cohérente.
+- Logue toutes les exceptions critiques avec des niveaux appropriés (ERROR, WARN).
+- Toutes les exceptions doivent inclure des messages clairs et des codes d'erreur spécifiques pour faciliter le débogage.
+- Toutes les exceptions doivent avoir un pattern identique.

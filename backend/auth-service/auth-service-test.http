@@ -1,0 +1,264 @@
+### =============================================================
+### AUTH SERVICE - HTTP Test File
+### Travel Platform - Identity and Access Management API
+### =============================================================
+
+### Base URL
+@baseUrl = http://localhost:8081/api/v1
+
+### Variables (will be populated after login)
+@accessToken = {{loginAdmin.response.body.accessToken}}
+@refreshToken = {{loginAdmin.response.body.refreshToken}}
+@userId = {{loginAdmin.response.body.user.id}}
+
+### =============================================================
+### AUTHENTICATION ENDPOINTS
+### =============================================================
+
+### ----- Register a new TRAVELER -----
+# @name registerTraveler
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+    "email": "traveler@example.com",
+    "password": "Traveler@123",
+    "firstName": "Jean",
+    "lastName": "Dupont",
+    "phoneNumber": "+221771234567",
+    "role": "TRAVELER"
+}
+
+### ----- Register a new MANAGER -----
+# @name registerManager
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+    "email": "manager@example.com",
+    "password": "Manager@123",
+    "firstName": "Amadou",
+    "lastName": "Diallo",
+    "phoneNumber": "+221776543210",
+    "role": "MANAGER"
+}
+
+### ----- Register a new ADMIN (for testing) -----
+# @name registerAdmin
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+    "email": "newadmin@travel.sn",
+    "password": "Admin@123456",
+    "firstName": "New",
+    "lastName": "Admin",
+    "phoneNumber": "+221770000000",
+    "role": "ADMIN"
+}
+
+### ----- Login as Admin -----
+# @name loginAdmin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "newadmin@travel.sn",
+    "password": "Admin@123456"
+}
+
+### ----- Login as Manager -----
+# @name loginManager
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "manager@example.com",
+    "password": "Manager@123"
+}
+
+### ----- Login as Traveler -----
+# @name loginTraveler
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "traveler@example.com",
+    "password": "Traveler@123"
+}
+
+### ----- Refresh Token -----
+# @name refreshAccessToken
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+{
+    "refreshToken": "{{refreshToken}}"
+}
+
+### ----- Logout -----
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{accessToken}}
+
+### =============================================================
+### CURRENT USER ENDPOINTS (Authenticated)
+### =============================================================
+
+### ----- Get Current User Profile -----
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{accessToken}}
+
+### ----- Update Current User Profile -----
+PUT {{baseUrl}}/users/me
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "firstName": "UpdatedFirst",
+    "lastName": "UpdatedLast",
+    "phoneNumber": "+221779999999"
+}
+
+### ----- Change Password -----
+POST {{baseUrl}}/users/me/change-password
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "currentPassword": "Admin@123456",
+    "newPassword": "NewAdmin@123456"
+}
+
+### =============================================================
+### ADMIN ENDPOINTS (Admin only)
+### =============================================================
+
+### ----- Get All Users (Paginated) -----
+GET {{baseUrl}}/users?page=0&size=10&sort=createdAt,desc
+Authorization: Bearer {{accessToken}}
+
+### ----- Get User by ID -----
+# Replace with actual UUID
+GET {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+
+### ----- Get Users by Role -----
+GET {{baseUrl}}/users/role/TRAVELER?page=0&size=10
+Authorization: Bearer {{accessToken}}
+
+### ----- Get Users by Role (MANAGER) -----
+GET {{baseUrl}}/users/role/MANAGER?page=0&size=10
+Authorization: Bearer {{accessToken}}
+
+### ----- Get Users by Status (ACTIVE) -----
+GET {{baseUrl}}/users/status/ACTIVE?page=0&size=10
+Authorization: Bearer {{accessToken}}
+
+### ----- Get Users by Status (BANNED) -----
+GET {{baseUrl}}/users/status/BANNED?page=0&size=10
+Authorization: Bearer {{accessToken}}
+
+### ----- Search Users -----
+GET {{baseUrl}}/users/search?search=jean&page=0&size=10
+Authorization: Bearer {{accessToken}}
+
+### ----- Update User by ID (Admin) -----
+# Replace with actual UUID
+PUT {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+    "firstName": "AdminUpdated",
+    "lastName": "ByAdmin",
+    "status": "ACTIVE"
+}
+
+### ----- Ban User -----
+# Replace with actual UUID of user to ban
+POST {{baseUrl}}/users/{{userId}}/ban
+Authorization: Bearer {{accessToken}}
+
+### ----- Unban User -----
+# Replace with actual UUID of user to unban
+POST {{baseUrl}}/users/{{userId}}/unban
+Authorization: Bearer {{accessToken}}
+
+### ----- Update Manager Performance Score -----
+# Replace with actual manager UUID
+PUT {{baseUrl}}/users/{{userId}}/performance-score?score=4.5
+Authorization: Bearer {{accessToken}}
+
+### ----- Delete User -----
+# Replace with actual UUID - BE CAREFUL!
+DELETE {{baseUrl}}/users/{{userId}}
+Authorization: Bearer {{accessToken}}
+
+### =============================================================
+### ERROR SCENARIOS (For Testing)
+### =============================================================
+
+### ----- Register with existing email (should fail) -----
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+    "email": "traveler@example.com",
+    "password": "Test@123456",
+    "firstName": "Test",
+    "lastName": "User",
+    "phoneNumber": "+221770000000",
+    "role": "TRAVELER"
+}
+
+### ----- Login with wrong password (should fail) -----
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "traveler@example.com",
+    "password": "WrongPassword123"
+}
+
+### ----- Access admin endpoint without auth (should fail) -----
+GET {{baseUrl}}/users
+
+### ----- Access admin endpoint with traveler token (should fail) -----
+# First login as traveler, then use that token here
+GET {{baseUrl}}/users
+Authorization: Bearer {{loginTraveler.response.body.accessToken}}
+
+### ----- Invalid validation (should fail) -----
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+    "email": "not-an-email",
+    "password": "short",
+    "firstName": "",
+    "lastName": "",
+    "role": "TRAVELER"
+}
+
+### =============================================================
+### HEALTH & MONITORING ENDPOINTS
+### =============================================================
+
+### ----- Health Check -----
+GET http://localhost:8081/actuator/health
+
+### ----- Info -----
+GET http://localhost:8081/actuator/info
+
+### ----- Prometheus Metrics -----
+GET http://localhost:8081/actuator/prometheus
+
+### =============================================================
+### SWAGGER / OPENAPI
+### =============================================================
+
+### ----- OpenAPI Spec (JSON) -----
+GET http://localhost:8081/api-docs
+
+### ----- Swagger UI -----
+# Open in browser: http://localhost:8081/swagger-ui.html
