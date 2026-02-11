@@ -10,7 +10,7 @@ Tu es un expert Java Senior travaillant sur le projet "Travel", un système de g
 - Langage : Java 21 (Utilise les Records, Pattern Matching, et Sequenced Collections).
 - Framework : Spring Boot 4.0.2
 - Gestion de dépendances : Maven.
-- Sécurité : Spring Security 7+ (OAuth2 Resource Server & Authorization Server).
+- Sécurité : Spring Security 7+ (OAuth2 Resource Server & Authorization Server). Utilisation de Vault pour les secrets.
 - Persistance : Spring Data JPA avec PostgreSQL / Spring Data Neo4j / Spring Data Elasticsearch.
 - Outils : Lombok (obligatoire), MapStruct (pour les mappers DTO), Flyway (migrations DB).
 

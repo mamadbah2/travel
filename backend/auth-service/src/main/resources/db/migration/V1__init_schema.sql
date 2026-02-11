@@ -1,4 +1,8 @@
 -- V1__init_schema.sql
+
+-- Enable pgcrypto for gen_random_uuid() if not already available
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
 -- Initial database schema for auth-service
 
 -- Users table

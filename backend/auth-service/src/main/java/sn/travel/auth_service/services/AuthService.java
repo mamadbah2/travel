@@ -1,6 +1,5 @@
 package sn.travel.auth_service.services;
 
-import org.springframework.security.core.userdetails.UserDetails;
 import sn.travel.auth_service.data.entities.User;
 import sn.travel.auth_service.web.dto.requests.LoginRequest;
 import sn.travel.auth_service.web.dto.requests.RefreshTokenRequest;
@@ -49,12 +48,4 @@ public interface AuthService {
      * @return the current user
      */
     User getCurrentUser();
-
-    /**
-     * Loads a UserDetails by username for Spring Security.
-     *
-     * @param username the username (email)
-     * @return UserDetails
-     */
-    UserDetails loadUserByUsername(String username);
 }
