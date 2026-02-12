@@ -1,3 +1,8 @@
 Ports forwards
 $ kubectl port-forward svc/postgres-travel-postgresql 5432:5432 -n travel
 $ kubectl port-forward svc/vault 8200:8200 -n travel
+$ kubectl port-forward svc/rabbitmq 5672:5672 15672:15672 -n travel
+
+Pour le flyway qui marche pas, afin de creer toutes les tables 
+# 1. On se connecte, on supprime tout (reset), et on joue le fichier SQL
+PGPASSWORD=5l6LoHoDiI psql -h localhost -p 5432 -U postgres -d travel_db -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO postgres; GRANT ALL ON SCHEMA public TO public;" -f /home/mamadbah/Java/travel/backend/travel-service/src/main/resources/db/migration/V1__init_travel_schema.sql

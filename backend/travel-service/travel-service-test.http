@@ -1,0 +1,329 @@
+### =============================================================
+### TRAVEL SERVICE - HTTP Test File
+### Travel Platform - Travel Management & Subscription API
+### =============================================================
+
+### Base URLs
+@authBaseUrl = http://localhost:8081/api/v1
+@travelBaseUrl = http://localhost:8082/api/v1
+
+### =============================================================
+### STEP 1: AUTHENTICATE (get tokens from auth-service)
+### =============================================================
+
+### ----- Login as Manager -----
+# @name loginManager
+POST {{authBaseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "manager@example.com",
+    "password": "Manager@123"
+}
+
+### ----- Login as Traveler -----
+# @name loginTraveler
+POST {{authBaseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "traveler@example.com",
+    "password": "Traveler@123"
+}
+
+### ----- Login as Admin -----
+# @name loginAdmin
+POST {{authBaseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "newadmin@travel.sn",
+    "password": "Admin@123456"
+}
+
+### Variables (populated from login responses)
+@managerToken = {{loginManager.response.body.accessToken}}
+@travelerToken = {{loginTraveler.response.body.accessToken}}
+@adminToken = {{loginAdmin.response.body.accessToken}}
+
+### =============================================================
+### TRAVEL MANAGEMENT (Manager endpoints)
+### =============================================================
+
+### ----- Create a Travel (Draft) -----
+# @name createTravel
+POST {{travelBaseUrl}}/travels
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "title": "Découverte de Saint-Louis",
+    "description": "Un voyage culturel inoubliable à travers la ville historique de Saint-Louis du Sénégal. Visitez l'île, le pont Faidherbe et la Langue de Barbarie.",
+    "startDate": "2026-04-15",
+    "endDate": "2026-04-20",
+    "price": 150000,
+    "maxCapacity": 25,
+    "accommodationType": "HOTEL",
+    "accommodationName": "Hôtel de la Poste",
+    "transportationType": "BUS",
+    "transportationDetails": "Bus climatisé Dakar → Saint-Louis, départ 7h00",
+    "destinations": [
+        {
+            "name": "Île de Saint-Louis",
+            "country": "Sénégal",
+            "city": "Saint-Louis",
+            "description": "Patrimoine mondial de l'UNESCO",
+            "displayOrder": 1
+        },
+        {
+            "name": "Parc National de la Langue de Barbarie",
+            "country": "Sénégal",
+            "city": "Saint-Louis",
+            "description": "Observation d'oiseaux et plages sauvages",
+            "displayOrder": 2
+        }
+    ],
+    "activities": [
+        {
+            "name": "Visite guidée de l'île",
+            "description": "Tour complet de l'île de Saint-Louis avec guide local",
+            "location": "Île de Saint-Louis",
+            "displayOrder": 1
+        },
+        {
+            "name": "Excursion en pirogue",
+            "description": "Balade en pirogue sur le fleuve Sénégal",
+            "location": "Fleuve Sénégal",
+            "displayOrder": 2
+        }
+    ]
+}
+
+### ----- Create a second Travel -----
+# @name createTravel2
+POST {{travelBaseUrl}}/travels
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "title": "Weekend Saly Beach",
+    "description": "Détente et farniente sur les plages de Saly. Parfait pour un weekend en famille.",
+    "startDate": "2026-05-01",
+    "endDate": "2026-05-03",
+    "price": 75000,
+    "maxCapacity": 15,
+    "accommodationType": "RESORT",
+    "accommodationName": "Royam Hotel Saly",
+    "transportationType": "MINIBUS",
+    "transportationDetails": "Minibus Dakar → Saly, départ 8h30",
+    "destinations": [
+        {
+            "name": "Saly Portudal",
+            "country": "Sénégal",
+            "city": "Mbour",
+            "description": "Station balnéaire populaire sur la Petite Côte",
+            "displayOrder": 1
+        }
+    ],
+    "activities": [
+        {
+            "name": "Plage & Baignade",
+            "description": "Journée détente à la plage",
+            "location": "Plage de Saly",
+            "displayOrder": 1
+        },
+        {
+            "name": "Visite de la Réserve de Bandia",
+            "description": "Safari dans la réserve naturelle de Bandia",
+            "location": "Réserve de Bandia",
+            "displayOrder": 2
+        }
+    ]
+}
+
+### Travel IDs (populated from creation responses)
+@travelId = {{createTravel.response.body.id}}
+@travelId2 = {{createTravel2.response.body.id}}
+
+### ----- Publish Travel 1 -----
+# @name publishTravel1
+POST {{travelBaseUrl}}/travels/{{travelId}}/publish
+Authorization: Bearer {{managerToken}}
+
+### ----- Publish Travel 2 -----
+# @name publishTravel2
+POST {{travelBaseUrl}}/travels/{{travelId2}}/publish
+Authorization: Bearer {{managerToken}}
+
+### ----- Update a Travel -----
+PUT {{travelBaseUrl}}/travels/{{travelId}}
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "title": "Découverte de Saint-Louis - Édition Spéciale",
+    "price": 175000,
+    "maxCapacity": 30
+}
+
+### ----- Get Manager's Travels -----
+GET {{travelBaseUrl}}/travels/manager/me
+Authorization: Bearer {{managerToken}}
+
+### =============================================================
+### PUBLIC ENDPOINTS (No auth required)
+### =============================================================
+
+### ----- Get All Available Travels (Paginated) -----
+GET {{travelBaseUrl}}/travels?page=0&size=10&sort=startDate,asc
+
+### ----- Get Travel by ID -----
+GET {{travelBaseUrl}}/travels/{{travelId}}
+
+### ----- Search Travels -----
+GET {{travelBaseUrl}}/travels/search?search=Saint-Louis&page=0&size=10
+
+### ----- Search Travels (2) -----
+GET {{travelBaseUrl}}/travels/search?search=beach&page=0&size=10
+
+### =============================================================
+### SUBSCRIPTION ENDPOINTS (Traveler)
+### =============================================================
+
+### ----- Subscribe to Travel 1 -----
+# @name subscribeTraveler
+POST {{travelBaseUrl}}/subscriptions/travel/{{travelId}}
+Authorization: Bearer {{travelerToken}}
+
+### ----- Subscribe to Travel 2 -----
+# @name subscribeTraveler2
+POST {{travelBaseUrl}}/subscriptions/travel/{{travelId2}}
+Authorization: Bearer {{travelerToken}}
+
+### Subscription IDs
+@subscriptionId = {{subscribeTraveler.response.body.id}}
+@subscriptionId2 = {{subscribeTraveler2.response.body.id}}
+
+### ----- Get My Subscriptions -----
+GET {{travelBaseUrl}}/subscriptions?page=0&size=10
+Authorization: Bearer {{travelerToken}}
+
+### ----- Get Subscription by ID -----
+GET {{travelBaseUrl}}/subscriptions/{{subscriptionId}}
+Authorization: Bearer {{travelerToken}}
+
+### ----- Cancel Subscription -----
+POST {{travelBaseUrl}}/subscriptions/{{subscriptionId2}}/cancel
+Authorization: Bearer {{travelerToken}}
+
+### =============================================================
+### MANAGER: SUBSCRIBER MANAGEMENT
+### =============================================================
+
+### ----- Get Subscribers for Travel 1 -----
+GET {{travelBaseUrl}}/travels/{{travelId}}/subscribers?page=0&size=10
+Authorization: Bearer {{managerToken}}
+
+### ----- Remove a Subscriber -----
+DELETE {{travelBaseUrl}}/travels/{{travelId}}/subscribers/{{subscriptionId}}
+Authorization: Bearer {{managerToken}}
+
+### =============================================================
+### ADMIN ENDPOINTS
+### =============================================================
+
+### ----- Admin: Delete a Travel (cascade) -----
+DELETE {{travelBaseUrl}}/travels/{{travelId2}}
+Authorization: Bearer {{adminToken}}
+
+### =============================================================
+### MANAGER: Cancel a Travel  
+### =============================================================
+
+### ----- Cancel Travel -----
+POST {{travelBaseUrl}}/travels/{{travelId}}/cancel
+Authorization: Bearer {{managerToken}}
+
+### =============================================================
+### ERROR SCENARIOS (For Testing)
+### =============================================================
+
+### ----- Subscribe without auth (should fail 401) -----
+POST {{travelBaseUrl}}/subscriptions/travel/{{travelId}}
+
+### ----- Manager tries to subscribe (should fail 403) -----
+POST {{travelBaseUrl}}/subscriptions/travel/{{travelId}}
+Authorization: Bearer {{managerToken}}
+
+### ----- Traveler tries to create a travel (should fail 403) -----
+POST {{travelBaseUrl}}/travels
+Authorization: Bearer {{travelerToken}}
+Content-Type: application/json
+
+{
+    "title": "Unauthorized Travel",
+    "description": "This should fail",
+    "startDate": "2026-06-01",
+    "endDate": "2026-06-05",
+    "price": 100000,
+    "maxCapacity": 10
+}
+
+### ----- Subscribe to non-existent travel (should fail 404) -----
+POST {{travelBaseUrl}}/subscriptions/travel/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{travelerToken}}
+
+### ----- Duplicate subscription (should fail 409 if already subscribed) -----
+POST {{travelBaseUrl}}/subscriptions/travel/{{travelId}}
+Authorization: Bearer {{travelerToken}}
+
+### ----- Create travel with invalid data (should fail 400) -----
+POST {{travelBaseUrl}}/travels
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "title": "",
+    "startDate": "2020-01-01",
+    "endDate": "2020-01-05",
+    "price": -100,
+    "maxCapacity": 0
+}
+
+### ----- Create travel starting tomorrow (3-day rule test) -----
+# @name createTravelTomorrow
+POST {{travelBaseUrl}}/travels
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "title": "Last Minute Travel (3-day rule test)",
+    "description": "This travel starts very soon",
+    "startDate": "2026-02-14",
+    "endDate": "2026-02-16",
+    "price": 50000,
+    "maxCapacity": 5
+}
+
+### =============================================================
+### HEALTH & MONITORING ENDPOINTS
+### =============================================================
+
+### ----- Health Check -----
+GET http://localhost:8082/actuator/health
+
+### ----- Info -----
+GET http://localhost:8082/actuator/info
+
+### ----- Prometheus Metrics -----
+GET http://localhost:8082/actuator/prometheus
+
+### =============================================================
+### SWAGGER / OPENAPI
+### =============================================================
+
+### ----- OpenAPI Spec (JSON) -----
+GET http://localhost:8082/api-docs
+
+### ----- Swagger UI (open in browser) -----
+# http://localhost:8082/swagger-ui.html
