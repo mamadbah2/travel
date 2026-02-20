@@ -1,0 +1,203 @@
+### =============================================================
+### NOTIFICATION SERVICE - HTTP Test File
+### Travel Platform - Notification Consultation API
+### =============================================================
+### NOTE: Les notifications sont créées automatiquement via RabbitMQ
+### quand un Traveler s'inscrit (SubscriptionCreatedEvent) ou quand
+### un paiement est traité (PaymentCompletedEvent).
+### Ce fichier teste les endpoints de CONSULTATION.
+### =============================================================
+
+### Base URLs
+@authBaseUrl = http://localhost:8081/api/v1
+@notifBaseUrl = http://localhost:8084/api/v1
+@travelBaseUrl = http://localhost:8082/api/v1
+
+### =============================================================
+### STEP 1: AUTHENTICATE (get tokens from auth-service)
+### =============================================================
+
+### ----- Login as Admin -----
+# @name loginAdmin
+POST {{authBaseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "newadmin@travel.sn",
+    "password": "Admin@123456"
+}
+
+### ----- Login as Manager -----
+# @name loginManager
+POST {{authBaseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "manager@example.com",
+    "password": "Manager@123"
+}
+
+### ----- Login as Traveler -----
+# @name loginTraveler
+POST {{authBaseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "traveler@example.com",
+    "password": "Traveler@123"
+}
+
+### Variables (populated from login responses)
+@adminToken = {{loginAdmin.response.body.accessToken}}
+@managerToken = {{loginManager.response.body.accessToken}}
+@travelerToken = {{loginTraveler.response.body.accessToken}}
+
+### =============================================================
+### STEP 2: TRIGGER NOTIFICATIONS (via travel-service flow)
+### =============================================================
+### Pour que des notifications existent, il faut :
+### 1. Créer un voyage (Manager)
+### 2. Le publier
+### 3. S'y inscrire (Traveler) → SubscriptionCreatedEvent → Email 1
+### 4. Attendre ~2s (payment simulation) → PaymentCompletedEvent → Email 2
+### 5. Ouvrir MailDev (http://localhost:1080) pour voir les emails
+### =============================================================
+
+### ----- Create a Travel (Manager) -----
+# @name createTravel
+POST {{travelBaseUrl}}/travels
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "title": "Weekend Saly Beach",
+    "description": "Détente et farniente sur les plages de Saly. Parfait pour un weekend en famille.",
+    "startDate": "2026-05-01",
+    "endDate": "2026-05-03",
+    "price": 75000,
+    "maxCapacity": 15,
+    "accommodationType": "RESORT",
+    "accommodationName": "Royam Hotel Saly",
+    "transportationType": "MINIBUS",
+    "transportationDetails": "Minibus Dakar → Saly, départ 8h30",
+    "destinations": [
+        {
+            "name": "Saly Portudal",
+            "country": "Sénégal",
+            "city": "Mbour",
+            "description": "Station balnéaire populaire sur la Petite Côte",
+            "displayOrder": 1
+        }
+    ],
+    "activities": [
+        {
+            "name": "Plage & Baignade",
+            "description": "Journée détente à la plage",
+            "location": "Plage de Saly",
+            "displayOrder": 1
+        },
+        {
+            "name": "Visite de la Réserve de Bandia",
+            "description": "Safari dans la réserve naturelle de Bandia",
+            "location": "Réserve de Bandia",
+            "displayOrder": 2
+        }
+    ]
+}
+
+### Travel ID (populated from creation response)
+@travelId = {{createTravel.response.body.id}}
+
+### ----- Publish the Travel -----
+# @name publishTravel
+POST {{travelBaseUrl}}/travels/{{travelId}}/publish
+Authorization: Bearer {{managerToken}}
+
+### ----- Subscribe as Traveler (triggers notification!) -----
+### ⚡ Ceci envoie un SubscriptionCreatedEvent → Email "Booking Received"
+### ⚡ Puis ~2s après → PaymentCompletedEvent → Email "Payment Successful"
+### Ouvrir http://localhost:1080 pour voir les emails !
+# @name subscribeTraveler
+POST {{travelBaseUrl}}/subscriptions/travel/{{travelId}}
+Authorization: Bearer {{travelerToken}}
+
+@subscriptionId = {{subscribeTraveler.response.body.id}}
+@travelerId = {{subscribeTraveler.response.body.travelerId}}
+
+### =============================================================
+### NOTIFICATION CONSULTATION ENDPOINTS
+### =============================================================
+
+### ----- Get All Notifications (Admin) -----
+GET {{notifBaseUrl}}/notifications?page=0&size=10&sort=createdAt,desc
+Authorization: Bearer {{adminToken}}
+
+### ----- Get All Notifications - Page 2 -----
+GET {{notifBaseUrl}}/notifications?page=1&size=5
+Authorization: Bearer {{adminToken}}
+
+### =============================================================
+### GET NOTIFICATION BY ID
+### =============================================================
+
+### ----- Get Notifications by Subscription ID -----
+### (Le moyen le plus fiable après une inscription)
+# @name getNotifBySubscription
+GET {{notifBaseUrl}}/notifications/subscription/{{subscriptionId}}?page=0&size=10
+Authorization: Bearer {{travelerToken}}
+
+### =============================================================
+### FILTER BY TRAVELER / TRAVEL
+### =============================================================
+
+### ----- Get Notifications by Traveler ID -----
+GET {{notifBaseUrl}}/notifications/traveler/{{travelerId}}?page=0&size=10
+Authorization: Bearer {{travelerToken}}
+
+### ----- Get Notifications by Travel ID -----
+GET {{notifBaseUrl}}/notifications/travel/{{travelId}}?page=0&size=10
+Authorization: Bearer {{managerToken}}
+
+### =============================================================
+### ERROR SCENARIOS
+### =============================================================
+
+### ----- Get non-existent Notification (should fail 404) -----
+GET {{notifBaseUrl}}/notifications/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{adminToken}}
+
+### ----- Access without auth (should fail 401) -----
+GET {{notifBaseUrl}}/notifications
+
+### ----- Invalid UUID format (should fail 400) -----
+GET {{notifBaseUrl}}/notifications/not-a-uuid
+Authorization: Bearer {{adminToken}}
+
+### =============================================================
+### HEALTH & MONITORING
+### =============================================================
+
+### ----- Health Check -----
+GET http://localhost:8084/actuator/health
+
+### ----- Info -----
+GET http://localhost:8084/actuator/info
+
+### ----- Prometheus Metrics -----
+GET http://localhost:8084/actuator/prometheus
+
+### =============================================================
+### SWAGGER / OPENAPI
+### =============================================================
+
+### ----- OpenAPI JSON -----
+GET http://localhost:8084/api-docs
+
+### ----- Swagger UI -----
+### Ouvrir dans le navigateur : http://localhost:8084/swagger-ui.html
+
+### =============================================================
+### MAILDEV UI
+### =============================================================
+### Ouvrir dans le navigateur : http://localhost:1080
+### Pour voir tous les emails envoyés par le notification-service

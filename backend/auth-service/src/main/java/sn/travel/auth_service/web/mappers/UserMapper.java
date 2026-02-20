@@ -1,59 +1,97 @@
 package sn.travel.auth_service.web.mappers;
 
-import org.mapstruct.*;
 import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Component;
 import sn.travel.auth_service.data.entities.User;
+import sn.travel.auth_service.data.enums.UserStatus;
 import sn.travel.auth_service.web.dto.requests.RegisterRequest;
 import sn.travel.auth_service.web.dto.requests.UpdateUserRequest;
 import sn.travel.auth_service.web.dto.responses.PageResponse;
 import sn.travel.auth_service.web.dto.responses.UserResponse;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * MapStruct mapper for User entity to DTO conversions.
+ * Manual mapper for User entity <-> DTO conversions.
+ * Replaces MapStruct to avoid Java 25 annotation processing incompatibility.
  */
-@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-public interface UserMapper {
+@Component
+public class UserMapper {
 
-    /**
-     * Converts a User entity to UserResponse DTO.
-     */
-    UserResponse toResponse(User user);
+    public UserResponse toResponse(User user) {
+        if (user == null) {
+            return null;
+        }
+        return new UserResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getPhoneNumber(),
+                user.getRole(),
+                user.getStatus(),
+                user.getPerformanceScore(),
+                user.getCreatedAt(),
+                user.getLastLoginAt()
+        );
+    }
 
-    /**
-     * Converts a list of User entities to a list of UserResponse DTOs.
-     */
-    List<UserResponse> toResponseList(List<User> users);
+    public List<UserResponse> toResponseList(List<User> users) {
+        if (users == null) {
+            return Collections.emptyList();
+        }
+        return users.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
 
-    /**
-     * Converts a RegisterRequest DTO to a User entity.
-     * Password should be encoded separately in the service layer.
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "password", ignore = true)
-    @Mapping(target = "status", ignore = true)
-    @Mapping(target = "performanceScore", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "lastLoginAt", ignore = true)
-    User toEntity(RegisterRequest request);
+    public User toEntity(RegisterRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return User.builder()
+                .email(request.email())
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .phoneNumber(request.phoneNumber())
+                .role(request.role())
+                .status(UserStatus.ACTIVE)
+                .build();
+    }
 
-    /**
-     * Updates a User entity with data from UpdateUserRequest DTO.
-     * Only non-null fields are updated.
-     */
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "password", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "lastLoginAt", ignore = true)
-    void updateEntity(UpdateUserRequest request, @MappingTarget User user);
+    public void updateEntity(UpdateUserRequest request, User user) {
+        if (request == null || user == null) {
+            return;
+        }
+        if (request.email() != null) {
+            user.setEmail(request.email());
+        }
+        if (request.firstName() != null) {
+            user.setFirstName(request.firstName());
+        }
+        if (request.lastName() != null) {
+            user.setLastName(request.lastName());
+        }
+        if (request.phoneNumber() != null) {
+            user.setPhoneNumber(request.phoneNumber());
+        }
+        if (request.role() != null) {
+            user.setRole(request.role());
+        }
+        if (request.status() != null) {
+            user.setStatus(request.status());
+        }
+        if (request.performanceScore() != null) {
+            user.setPerformanceScore(request.performanceScore());
+        }
+    }
 
-    /**
-     * Converts a Spring Data Page to a PageResponse.
-     */
-    default PageResponse<UserResponse> toPageResponse(Page<User> page) {
+    public PageResponse<UserResponse> toPageResponse(Page<User> page) {
+        if (page == null) {
+            return null;
+        }
         return new PageResponse<>(
                 toResponseList(page.getContent()),
                 page.getNumber(),

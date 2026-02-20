@@ -2,14 +2,19 @@ package sn.travel.travel_service.services.implementation;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sn.travel.travel_service.config.RabbitMQConfig;
 import sn.travel.travel_service.data.entities.Activity;
 import sn.travel.travel_service.data.entities.Destination;
 import sn.travel.travel_service.data.entities.Travel;
 import sn.travel.travel_service.data.enums.TravelStatus;
+import sn.travel.travel_service.data.records.TravelCreatedEvent;
+import sn.travel.travel_service.data.records.TravelDeletedEvent;
+import sn.travel.travel_service.data.records.TravelUpdatedEvent;
 import sn.travel.travel_service.data.repositories.TravelRepository;
 import sn.travel.travel_service.exceptions.TravelNotFoundException;
 import sn.travel.travel_service.exceptions.UnauthorizedAccessException;
@@ -37,6 +42,7 @@ public class TravelServiceImpl implements TravelService {
 
     private final TravelRepository travelRepository;
     private final TravelMapper travelMapper;
+    private final RabbitTemplate rabbitTemplate;
 
     @Override
     public TravelResponse createTravel(CreateTravelRequest request, UUID managerId) {
@@ -99,6 +105,12 @@ public class TravelServiceImpl implements TravelService {
         }
 
         Travel updatedTravel = travelRepository.save(travel);
+
+        // Publish update event for search indexing (only if travel is PUBLISHED)
+        if (updatedTravel.getStatus() == TravelStatus.PUBLISHED) {
+            publishTravelUpdatedEvent(updatedTravel);
+        }
+
         return travelMapper.toResponse(updatedTravel);
     }
 
@@ -139,6 +151,10 @@ public class TravelServiceImpl implements TravelService {
         }
 
         log.warn("Deleting travel {} (cascade will remove subscriptions)", travelId);
+
+        // Publish delete event for search index removal
+        publishTravelDeletedEvent(travel.getId());
+
         travelRepository.delete(travel);
     }
 
@@ -155,6 +171,9 @@ public class TravelServiceImpl implements TravelService {
         Travel publishedTravel = travelRepository.save(travel);
         log.info("Travel {} published by manager {}", travelId, managerId);
 
+        // Publish event for search indexing
+        publishTravelCreatedEvent(publishedTravel);
+
         return travelMapper.toResponse(publishedTravel);
     }
 
@@ -166,6 +185,9 @@ public class TravelServiceImpl implements TravelService {
         travel.setStatus(TravelStatus.CANCELLED);
         Travel cancelledTravel = travelRepository.save(travel);
         log.info("Travel {} cancelled by manager {}", travelId, managerId);
+
+        // Publish delete event to remove from search index
+        publishTravelDeletedEvent(cancelledTravel.getId());
 
         return travelMapper.toResponse(cancelledTravel);
     }
@@ -181,5 +203,93 @@ public class TravelServiceImpl implements TravelService {
         if (!travel.getManagerId().equals(managerId)) {
             throw new UnauthorizedAccessException("You are not the owner of this travel");
         }
+    }
+
+    // ---- Event publishing helpers ----
+
+    private void publishTravelCreatedEvent(Travel travel) {
+        try {
+            TravelCreatedEvent event = buildTravelCreatedEvent(travel);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.TRAVEL_EXCHANGE, RabbitMQConfig.TRAVEL_CREATED_KEY, event);
+            log.info("Published TravelCreatedEvent for travel {}", travel.getId());
+        } catch (Exception e) {
+            log.error("Failed to publish TravelCreatedEvent for travel {}: {}", travel.getId(), e.getMessage(), e);
+        }
+    }
+
+    private void publishTravelUpdatedEvent(Travel travel) {
+        try {
+            TravelUpdatedEvent event = buildTravelUpdatedEvent(travel);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.TRAVEL_EXCHANGE, RabbitMQConfig.TRAVEL_UPDATED_KEY, event);
+            log.info("Published TravelUpdatedEvent for travel {}", travel.getId());
+        } catch (Exception e) {
+            log.error("Failed to publish TravelUpdatedEvent for travel {}: {}", travel.getId(), e.getMessage(), e);
+        }
+    }
+
+    private void publishTravelDeletedEvent(UUID travelId) {
+        try {
+            TravelDeletedEvent event = new TravelDeletedEvent(travelId);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.TRAVEL_EXCHANGE, RabbitMQConfig.TRAVEL_DELETED_KEY, event);
+            log.info("Published TravelDeletedEvent for travel {}", travelId);
+        } catch (Exception e) {
+            log.error("Failed to publish TravelDeletedEvent for travel {}: {}", travelId, e.getMessage(), e);
+        }
+    }
+
+    private TravelCreatedEvent buildTravelCreatedEvent(Travel travel) {
+        return new TravelCreatedEvent(
+                travel.getId(),
+                travel.getManagerId(),
+                travel.getTitle(),
+                travel.getDescription(),
+                travel.getStartDate(),
+                travel.getEndDate(),
+                travel.getDuration(),
+                travel.getPrice(),
+                travel.getMaxCapacity(),
+                travel.getCurrentBookings(),
+                travel.getStatus().name(),
+                travel.getAccommodationType() != null ? travel.getAccommodationType().name() : null,
+                travel.getAccommodationName(),
+                travel.getTransportationType() != null ? travel.getTransportationType().name() : null,
+                travel.getTransportationDetails(),
+                travel.getDestinations() != null ? travel.getDestinations().stream()
+                        .map(d -> new TravelCreatedEvent.DestinationData(d.getName(), d.getCountry(), d.getCity(), d.getDescription()))
+                        .toList() : List.of(),
+                travel.getActivities() != null ? travel.getActivities().stream()
+                        .map(a -> new TravelCreatedEvent.ActivityData(a.getName(), a.getDescription(), a.getLocation()))
+                        .toList() : List.of(),
+                travel.getCreatedAt(),
+                travel.getUpdatedAt()
+        );
+    }
+
+    private TravelUpdatedEvent buildTravelUpdatedEvent(Travel travel) {
+        return new TravelUpdatedEvent(
+                travel.getId(),
+                travel.getManagerId(),
+                travel.getTitle(),
+                travel.getDescription(),
+                travel.getStartDate(),
+                travel.getEndDate(),
+                travel.getDuration(),
+                travel.getPrice(),
+                travel.getMaxCapacity(),
+                travel.getCurrentBookings(),
+                travel.getStatus().name(),
+                travel.getAccommodationType() != null ? travel.getAccommodationType().name() : null,
+                travel.getAccommodationName(),
+                travel.getTransportationType() != null ? travel.getTransportationType().name() : null,
+                travel.getTransportationDetails(),
+                travel.getDestinations() != null ? travel.getDestinations().stream()
+                        .map(d -> new TravelUpdatedEvent.DestinationData(d.getName(), d.getCountry(), d.getCity(), d.getDescription()))
+                        .toList() : List.of(),
+                travel.getActivities() != null ? travel.getActivities().stream()
+                        .map(a -> new TravelUpdatedEvent.ActivityData(a.getName(), a.getDescription(), a.getLocation()))
+                        .toList() : List.of(),
+                travel.getCreatedAt(),
+                travel.getUpdatedAt()
+        );
     }
 }

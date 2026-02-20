@@ -1,28 +1,50 @@
 package sn.travel.travel_service.web.mappers;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Component;
 import sn.travel.travel_service.data.entities.Subscription;
 import sn.travel.travel_service.web.dto.responses.PageResponse;
 import sn.travel.travel_service.web.dto.responses.SubscriptionResponse;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * MapStruct mapper for Subscription entity to DTO conversions.
+ * Manual mapper for Subscription entity <-> DTO conversions.
+ * Replaces MapStruct to avoid Java 25 annotation processing incompatibility.
  */
-@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-public interface SubscriptionMapper {
+@Component
+public class SubscriptionMapper {
 
-    @Mapping(target = "travelId", source = "travel.id")
-    @Mapping(target = "travelTitle", source = "travel.title")
-    SubscriptionResponse toResponse(Subscription subscription);
+    public SubscriptionResponse toResponse(Subscription subscription) {
+        if (subscription == null) {
+            return null;
+        }
+        return new SubscriptionResponse(
+                subscription.getId(),
+                subscription.getTravelerId(),
+                subscription.getTravel() != null ? subscription.getTravel().getId() : null,
+                subscription.getTravel() != null ? subscription.getTravel().getTitle() : null,
+                subscription.getStatus(),
+                subscription.getCreatedAt(),
+                subscription.getUpdatedAt()
+        );
+    }
 
-    List<SubscriptionResponse> toResponseList(List<Subscription> subscriptions);
+    public List<SubscriptionResponse> toResponseList(List<Subscription> subscriptions) {
+        if (subscriptions == null) {
+            return Collections.emptyList();
+        }
+        return subscriptions.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
 
-    default PageResponse<SubscriptionResponse> toPageResponse(Page<Subscription> page) {
+    public PageResponse<SubscriptionResponse> toPageResponse(Page<Subscription> page) {
+        if (page == null) {
+            return null;
+        }
         return new PageResponse<>(
                 toResponseList(page.getContent()),
                 page.getNumber(),

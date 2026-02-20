@@ -1,0 +1,260 @@
+### =============================================================
+### SEARCH SERVICE - HTTP Test File
+### Travel Platform - Elasticsearch Search API
+### =============================================================
+### NOTE: Le search-service est un service CQRS Read-Side.
+### Il ne crée PAS de données — les documents sont indexés
+### automatiquement via RabbitMQ quand un manager publie un voyage
+### depuis le travel-service.
+###
+### Flux de test complet :
+### 1. Se connecter (auth-service)
+### 2. Créer et publier un voyage (travel-service) → déclenche l'indexation
+### 3. Rechercher le voyage (search-service)
+### =============================================================
+
+### Base URLs
+@authBaseUrl = http://localhost:8081/api/v1
+@travelBaseUrl = http://localhost:8082/api/v1
+@searchBaseUrl = http://localhost:8085/api/v1
+
+### =============================================================
+### STEP 1: AUTHENTICATE (get tokens from auth-service)
+### =============================================================
+
+### ----- Login as Manager -----
+# @name loginManager
+POST {{authBaseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "manager@travel.sn",
+    "password": "Password123!"
+}
+
+### ----- Login as Traveler -----
+# @name loginTraveler
+POST {{authBaseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "traveler@travel.sn",
+    "password": "Password123!"
+}
+
+### Variables (populated from login responses)
+@managerToken = {{loginManager.response.body.accessToken}}
+@travelerToken = {{loginTraveler.response.body.accessToken}}
+
+### =============================================================
+### STEP 2: CREATE & PUBLISH TRAVELS (triggers search indexing!)
+### =============================================================
+### ⚡ Quand un voyage est publié, le travel-service envoie un
+### TravelCreatedEvent via RabbitMQ → le search-service l'indexe
+### dans Elasticsearch automatiquement.
+### =============================================================
+
+### ----- Create Travel 1: Senegal Beach Trip -----
+# @name createTravel1
+POST {{travelBaseUrl}}/travels
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "title": "Escapade à Saint-Louis",
+    "description": "Découvrez la magnifique ville de Saint-Louis du Sénégal, avec ses plages dorées, son architecture coloniale et sa culture vibrante. Balade en pirogue sur le fleuve Sénégal.",
+    "startDate": "2026-04-15",
+    "endDate": "2026-04-22",
+    "price": 450000.0,
+    "maxCapacity": 20,
+    "accommodationType": "HOTEL",
+    "accommodationName": "Hôtel de la Poste",
+    "transportationType": "BUS",
+    "transportationDetails": "Bus climatisé Dakar → Saint-Louis (aller-retour)",
+    "destinations": [
+        {
+            "name": "Saint-Louis",
+            "country": "Sénégal",
+            "city": "Saint-Louis",
+            "description": "Ancienne capitale du Sénégal, patrimoine UNESCO"
+        },
+        {
+            "name": "Langue de Barbarie",
+            "country": "Sénégal",
+            "city": "Saint-Louis",
+            "description": "Parc national et plage sauvage"
+        }
+    ],
+    "activities": [
+        {
+            "name": "Balade en pirogue",
+            "description": "Tour en pirogue sur le fleuve Sénégal",
+            "location": "Fleuve Sénégal"
+        },
+        {
+            "name": "Visite du quartier des pêcheurs",
+            "description": "Découverte de Guet Ndar, le quartier des pêcheurs",
+            "location": "Guet Ndar, Saint-Louis"
+        }
+    ]
+}
+
+@travelId1 = {{createTravel1.response.body.id}}
+
+### ----- Create Travel 2: Casamance Adventure -----
+# @name createTravel2
+POST {{travelBaseUrl}}/travels
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "title": "Aventure en Casamance",
+    "description": "Explorez la Casamance, région verdoyante du sud du Sénégal. Forêts tropicales, plages paradisiaques et rencontre avec la culture Diola.",
+    "startDate": "2026-05-10",
+    "endDate": "2026-05-18",
+    "price": 650000.0,
+    "maxCapacity": 15,
+    "accommodationType": "GUESTHOUSE",
+    "accommodationName": "Le Fromager",
+    "transportationType": "FLIGHT",
+    "transportationDetails": "Vol Air Sénégal Dakar → Ziguinchor",
+    "destinations": [
+        {
+            "name": "Cap Skirring",
+            "country": "Sénégal",
+            "city": "Ziguinchor",
+            "description": "Station balnéaire avec plages de sable fin"
+        },
+        {
+            "name": "Île de Karabane",
+            "country": "Sénégal",
+            "city": "Casamance",
+            "description": "Île tropicale accessible uniquement par pirogue"
+        }
+    ],
+    "activities": [
+        {
+            "name": "Randonnée en forêt",
+            "description": "Trek dans la forêt tropicale de Casamance",
+            "location": "Forêt de Casamance"
+        },
+        {
+            "name": "Observation des oiseaux",
+            "description": "Birdwatching dans le parc de la Basse Casamance",
+            "location": "Parc de la Basse Casamance"
+        }
+    ]
+}
+
+@travelId2 = {{createTravel2.response.body.id}}
+
+### ----- Publish Travel 1 (triggers TravelCreatedEvent → search indexing!) -----
+# @name publishTravel1
+POST {{travelBaseUrl}}/travels/{{travelId1}}/publish
+Authorization: Bearer {{managerToken}}
+
+### ----- Publish Travel 2 (triggers TravelCreatedEvent → search indexing!) -----
+# @name publishTravel2
+POST {{travelBaseUrl}}/travels/{{travelId2}}/publish
+Authorization: Bearer {{managerToken}}
+
+### ⏳ Attendez ~1 seconde que le search-service indexe les documents
+
+### =============================================================
+### STEP 3: SEARCH (the fun part! 🔍)
+### =============================================================
+
+### ----- Search all (no query) → returns all published travels -----
+GET {{searchBaseUrl}}/search?page=0&size=10
+
+### ----- Full-text search: "Saint-Louis" -----
+GET {{searchBaseUrl}}/search?q=Saint-Louis&page=0&size=10
+
+### ----- Full-text search: "beach" (fuzzy matching) -----
+GET {{searchBaseUrl}}/search?q=plage&page=0&size=10
+
+### ----- Full-text search: "Casamance" -----
+GET {{searchBaseUrl}}/search?q=Casamance&page=0&size=10
+
+### ----- Fuzzy search: "Sain-Loui" (with typo → should match Saint-Louis!) -----
+GET {{searchBaseUrl}}/search?q=Sain-Loui&page=0&size=10
+
+### ----- Fuzzy search: "aventurr" (typo → should match Aventure!) -----
+GET {{searchBaseUrl}}/search?q=aventurr&page=0&size=10
+
+### ----- Search by destination country: "Sénégal" -----
+GET {{searchBaseUrl}}/search?q=Sénégal&page=0&size=10
+
+### ----- Search by activity: "pirogue" -----
+GET {{searchBaseUrl}}/search?q=pirogue&page=0&size=10
+
+### =============================================================
+### FILTERED SEARCH
+### =============================================================
+
+### ----- Filter by price: max 500,000 CFA -----
+GET {{searchBaseUrl}}/search?maxPrice=500000&page=0&size=10
+
+### ----- Filter by price: min 600,000 CFA -----
+GET {{searchBaseUrl}}/search?minPrice=600000&page=0&size=10
+
+### ----- Filter by price range: 400,000 - 500,000 CFA -----
+GET {{searchBaseUrl}}/search?minPrice=400000&maxPrice=500000&page=0&size=10
+
+### ----- Filter by departure date: from May 2026 -----
+GET {{searchBaseUrl}}/search?fromDate=2026-05-01&page=0&size=10
+
+### ----- Combined: search "plage" + max 500k CFA -----
+GET {{searchBaseUrl}}/search?q=plage&maxPrice=500000&page=0&size=10
+
+### ----- Combined: search "forêt" + from May 2026 + price range -----
+GET {{searchBaseUrl}}/search?q=forêt&fromDate=2026-05-01&minPrice=500000&maxPrice=700000&page=0&size=10
+
+### =============================================================
+### GET BY ID
+### =============================================================
+
+### ----- Get indexed travel by ID -----
+GET {{searchBaseUrl}}/search/{{travelId1}}
+
+### ----- Get second travel by ID -----
+GET {{searchBaseUrl}}/search/{{travelId2}}
+
+### =============================================================
+### ERROR SCENARIOS
+### =============================================================
+
+### ----- Get non-existent document (should fail 404) -----
+GET {{searchBaseUrl}}/search/00000000-0000-0000-0000-000000000000
+
+### ----- Empty search results -----
+GET {{searchBaseUrl}}/search?q=nonexistenttravelxyz123&page=0&size=10
+
+### =============================================================
+### STEP 4: UPDATE & DELETE (test re-indexing & removal)
+### =============================================================
+
+### ----- Update Travel 1 (triggers TravelUpdatedEvent → re-indexing) -----
+PUT {{travelBaseUrl}}/travels/{{travelId1}}
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "title": "Escapade à Saint-Louis - Edition 2026",
+    "price": 475000.0
+}
+
+### ⏳ Wait ~1s then search again — should show updated title & price
+GET {{searchBaseUrl}}/search?q=Edition%202026&page=0&size=10
+
+### ----- Cancel Travel 2 (triggers TravelDeletedEvent → removed from index) -----
+POST {{travelBaseUrl}}/travels/{{travelId2}}/cancel
+Authorization: Bearer {{managerToken}}
+
+### ⏳ Wait ~1s then search again — Casamance should be gone
+GET {{searchBaseUrl}}/search?q=Casamance&page=0&size=10
+
+### =============================================================
+### SWAGGER UI
+### =============================================================
+### Open http://localhost:8085/swagger-ui.html in your browser

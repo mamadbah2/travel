@@ -1,0 +1,203 @@
+### =============================================================
+### PAYMENT SERVICE - HTTP Test File
+### Travel Platform - Payment Processing & Consultation API
+### =============================================================
+### NOTE: Les paiements sont créés automatiquement via RabbitMQ
+### quand un Traveler s'inscrit à un voyage (travel-service).
+### Ce fichier teste uniquement les endpoints de CONSULTATION.
+### =============================================================
+
+### Base URLs
+@authBaseUrl = http://localhost:8081/api/v1
+@paymentBaseUrl = http://localhost:8083/api/v1
+@travelBaseUrl = http://localhost:8082/api/v1
+
+### =============================================================
+### STEP 1: AUTHENTICATE (get tokens from auth-service)
+### =============================================================
+
+### ----- Login as Admin -----
+# @name loginAdmin
+POST {{authBaseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "newadmin@travel.sn",
+    "password": "Admin@123456"
+}
+
+### ----- Login as Manager -----
+# @name loginManager
+POST {{authBaseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "manager@example.com",
+    "password": "Manager@123"
+}
+
+### ----- Login as Traveler -----
+# @name loginTraveler
+POST {{authBaseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "traveler@example.com",
+    "password": "Traveler@123"
+}
+
+### Variables (populated from login responses)
+@adminToken = {{loginAdmin.response.body.accessToken}}
+@managerToken = {{loginManager.response.body.accessToken}}
+@travelerToken = {{loginTraveler.response.body.accessToken}}
+
+### =============================================================
+### STEP 2: TRIGGER A PAYMENT (via travel-service subscription)
+### =============================================================
+### Pour qu'un paiement existe, il faut d'abord :
+### 1. Créer un voyage (Manager)
+### 2. Le publier
+### 3. S'y inscrire (Traveler) → déclenche SubscriptionCreatedEvent
+### 4. Le payment-service reçoit l'event et crée le paiement
+### =============================================================
+
+### ----- Create a Travel (Manager) -----
+# @name createTravel
+POST {{travelBaseUrl}}/travels
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "title": "Weekend Saly Beach",
+    "description": "Détente et farniente sur les plages de Saly. Parfait pour un weekend en famille.",
+    "startDate": "2026-05-01",
+    "endDate": "2026-05-03",
+    "price": 75000,
+    "maxCapacity": 15,
+    "accommodationType": "RESORT",
+    "accommodationName": "Royam Hotel Saly",
+    "transportationType": "MINIBUS",
+    "transportationDetails": "Minibus Dakar → Saly, départ 8h30",
+    "destinations": [
+        {
+            "name": "Saly Portudal",
+            "country": "Sénégal",
+            "city": "Mbour",
+            "description": "Station balnéaire populaire sur la Petite Côte",
+            "displayOrder": 1
+        }
+    ],
+    "activities": [
+        {
+            "name": "Plage & Baignade",
+            "description": "Journée détente à la plage",
+            "location": "Plage de Saly",
+            "displayOrder": 1
+        },
+        {
+            "name": "Visite de la Réserve de Bandia",
+            "description": "Safari dans la réserve naturelle de Bandia",
+            "location": "Réserve de Bandia",
+            "displayOrder": 2
+        }
+    ]
+}
+
+### Travel ID (populated from creation response)
+@travelId = {{createTravel.response.body.id}}
+
+### ----- Publish the Travel -----
+# @name publishTravel
+POST {{travelBaseUrl}}/travels/{{travelId}}/publish
+Authorization: Bearer {{managerToken}}
+
+### ----- Subscribe as Traveler (triggers payment!) -----
+### ⚡ Ceci envoie un SubscriptionCreatedEvent au payment-service
+### Attendez ~2 secondes (simulation bancaire) avant de consulter
+# @name subscribeTraveler
+POST {{travelBaseUrl}}/subscriptions/travel/{{travelId}}
+Authorization: Bearer {{travelerToken}}
+
+@subscriptionId = {{subscribeTraveler.response.body.id}}
+
+### =============================================================
+### PAYMENT CONSULTATION ENDPOINTS
+### =============================================================
+
+### ----- Get All Payments (Admin) -----
+GET {{paymentBaseUrl}}/payments?page=0&size=10&sort=createdAt,desc
+
+### ----- Get All Payments - Page 2 -----
+GET {{paymentBaseUrl}}/payments?page=1&size=5
+
+### =============================================================
+### GET PAYMENT BY ID
+### =============================================================
+
+### ----- Get Payment by Subscription ID -----
+### (Le moyen le plus fiable de retrouver un paiement après inscription)
+# @name getPaymentBySubscription
+GET {{paymentBaseUrl}}/payments/subscription/{{subscriptionId}}
+
+@paymentId = {{getPaymentBySubscription.response.body.id}}
+
+### ----- Get Payment by Payment ID -----
+GET {{paymentBaseUrl}}/payments/{{paymentId}}
+
+### =============================================================
+### FILTER BY TRAVELER / TRAVEL
+### =============================================================
+
+### ----- Get Payments by Traveler ID -----
+### (Récupérer le travelerId depuis le token ou la réponse subscription)
+@travelerId = {{subscribeTraveler.response.body.travelerId}}
+
+GET {{paymentBaseUrl}}/payments/traveler/{{travelerId}}?page=0&size=10
+
+### ----- Get Payments by Travel ID -----
+GET {{paymentBaseUrl}}/payments/travel/{{travelId}}?page=0&size=10
+
+### =============================================================
+### ERROR SCENARIOS
+### =============================================================
+
+### ----- Get non-existent Payment (should fail 404) -----
+GET {{paymentBaseUrl}}/payments/00000000-0000-0000-0000-000000000000
+
+### ----- Get payment for non-existent Subscription (should fail 404) -----
+GET {{paymentBaseUrl}}/payments/subscription/00000000-0000-0000-0000-000000000000
+
+### ----- Get payments for non-existent Traveler (should return empty page) -----
+GET {{paymentBaseUrl}}/payments/traveler/00000000-0000-0000-0000-000000000000?page=0&size=10
+
+### ----- Get payments for non-existent Travel (should return empty page) -----
+GET {{paymentBaseUrl}}/payments/travel/00000000-0000-0000-0000-000000000000?page=0&size=10
+
+### ----- Invalid UUID format (should fail 400) -----
+GET {{paymentBaseUrl}}/payments/not-a-uuid
+
+### ----- Invalid pagination (negative page) -----
+GET {{paymentBaseUrl}}/payments?page=-1&size=10
+
+### =============================================================
+### HEALTH & MONITORING
+### =============================================================
+
+### ----- Health Check -----
+GET http://localhost:8083/actuator/health
+
+### ----- Info -----
+GET http://localhost:8083/actuator/info
+
+### ----- Prometheus Metrics -----
+GET http://localhost:8083/actuator/prometheus
+
+### =============================================================
+### SWAGGER / OPENAPI
+### =============================================================
+
+### ----- OpenAPI Spec (JSON) -----
+GET http://localhost:8083/api-docs
+
+### ----- Swagger UI (open in browser) -----
+# http://localhost:8083/swagger-ui.html

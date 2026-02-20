@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Booking Received</title>
+</head>
+<body style="font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7fa;">
+    <div style="max-width: 600px; margin: 30px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08);">
+
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #0066cc, #0099ff); padding: 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">✈️ Booking Received</h1>
+            <p style="color: #cce5ff; margin: 8px 0 0 0; font-size: 14px;">Your travel registration is being processed</p>
+        </div>
+
+        <!-- Body -->
+        <div style="padding: 30px;">
+            <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
+                Hello! Your booking has been received and is now <strong>pending payment</strong>.
+            </p>
+
+            <div style="background-color: #f0f7ff; border-left: 4px solid #0066cc; padding: 16px; border-radius: 4px; margin-bottom: 20px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td style="padding: 6px 0; color: #666; font-size: 14px;">Travel:</td>
+                        <td style="padding: 6px 0; color: #333; font-weight: 600; font-size: 14px;" th:text="${travelTitle}">Safari Adventure</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px 0; color: #666; font-size: 14px;">Booking ID:</td>
+                        <td style="padding: 6px 0; color: #333; font-family: monospace; font-size: 13px;" th:text="${subscriptionId}">abc-123</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px 0; color: #666; font-size: 14px;">Amount:</td>
+                        <td style="padding: 6px 0; color: #333; font-weight: 600; font-size: 14px;" th:text="${amount}">150 000 XOF</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div style="background-color: #fff8e1; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                <p style="margin: 0; color: #856404; font-size: 14px;">
+                    ⏳ <strong>Next step:</strong> Payment is being processed. You will receive a confirmation email once your payment is completed.
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e9ecef;">
+            <p style="margin: 0; color: #999; font-size: 12px;">
+                Travel Platform &copy; 2026 | This is an automated notification.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -2,7 +2,14 @@ Ports forwards
 $ kubectl port-forward svc/postgres-travel-postgresql 5432:5432 -n travel
 $ kubectl port-forward svc/vault 8200:8200 -n travel
 $ kubectl port-forward svc/rabbitmq 5672:5672 15672:15672 -n travel
+$ kubectl port-forward svc/maildev 1025:1025 1080:1080 -n travel
+$ kubectl port-forward svc/elasticsearch-master 9200:9200 -n travel
 
 Pour le flyway qui marche pas, afin de creer toutes les tables 
 # 1. On se connecte, on supprime tout (reset), et on joue le fichier SQL
 PGPASSWORD=5l6LoHoDiI psql -h localhost -p 5432 -U postgres -d travel_db -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO postgres; GRANT ALL ON SCHEMA public TO public;" -f /home/mamadbah/Java/travel/backend/travel-service/src/main/resources/db/migration/V1__init_travel_schema.sql
+PGPASSWORD=5l6LoHoDiI psql -h localhost -p 5432 -U postgres -d travel_payment_db -f /home/mamadbah/Java/travel/backend/payment-service/src/main/resources/db/migration/V1__init_payment_schema.sql
+pour inspecter les connexions réseau. Elle remplace l'ancienne commande netstat en étant plus rapide et précise. ￼
+Voici le détail de chaque option (flag) utilisée :
+
+ELASTIC_PASSWORD:lbB07FlWk4MDeGYx

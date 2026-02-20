@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * RabbitMQ configuration for event-driven communication.
- * Handles subscription events (payment requests, confirmations, cancellations).
+ * Handles subscription events, payment events, and travel lifecycle events.
  */
 @Configuration
 public class RabbitMQConfig {
@@ -19,6 +19,7 @@ public class RabbitMQConfig {
     // Exchanges
     public static final String SUBSCRIPTION_EXCHANGE = "subscription.exchange";
     public static final String PAYMENT_EXCHANGE = "payment.exchange";
+    public static final String TRAVEL_EXCHANGE = "travel.exchange";
 
     // Queues
     public static final String SUBSCRIPTION_CREATED_QUEUE = "subscription.created.queue";
@@ -28,6 +29,11 @@ public class RabbitMQConfig {
     public static final String SUBSCRIPTION_CREATED_KEY = "subscription.created";
     public static final String PAYMENT_SUCCESS_KEY = "payment.success";
     public static final String PAYMENT_FAILED_KEY = "payment.failed";
+
+    // Travel Event Routing Keys (published for search-service indexing)
+    public static final String TRAVEL_CREATED_KEY = "travel.created";
+    public static final String TRAVEL_UPDATED_KEY = "travel.updated";
+    public static final String TRAVEL_DELETED_KEY = "travel.deleted";
 
     // ---- Exchanges ----
 
@@ -39,6 +45,11 @@ public class RabbitMQConfig {
     @Bean
     public TopicExchange paymentExchange() {
         return new TopicExchange(PAYMENT_EXCHANGE);
+    }
+
+    @Bean
+    public TopicExchange travelExchange() {
+        return new TopicExchange(TRAVEL_EXCHANGE);
     }
 
     // ---- Queues ----
