@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Travel Management System (TMS) — a microservices-based travel platform written in French business context (Senegal-focused). The project uses event-driven architecture with RabbitMQ for inter-service communication and is deployed on Kubernetes (K3s) on an OVH VPS.
+Travel Management System (TMS) — a microservices-based travel platform written in French business context (Senegal-focused). The project uses event-driven architecture with RabbitMQ for inter-service communication. External dependencies run locally via Docker Compose.
 
 ## Tech Stack
 
@@ -31,8 +31,8 @@ cd <service-name> && ./mvnw spring-boot:run
 # Run tests for a service
 cd <service-name> && ./mvnw test
 
-# Start all K8s port-forwards for local dev
-./tunnels.sh
+# Start all external dependencies (PostgreSQL, RabbitMQ, Elasticsearch, Vault, MailDev)
+docker compose up -d
 ```
 
 There is no root `pom.xml` — you cannot build all services at once from the root.
@@ -49,17 +49,26 @@ There is no root `pom.xml` — you cannot build all services at once from the ro
 | **search-service** | 8085 | Elasticsearch | CQRS read-side, consumes travel events from RabbitMQ, indexes into Elasticsearch |
 | **rec-service** | — | Neo4j | Recommendation engine (early stage) |
 
-## Infrastructure (K8s Port Forwards)
+## Infrastructure (Docker Compose)
 
-Local development requires port-forwarding to K8s services (use `./tunnels.sh`):
+All external dependencies run via `docker-compose.yml` at the project root:
 
-| Service | Port(s) |
-|---------|---------|
-| PostgreSQL | 5432 |
-| Vault | 8200 |
-| RabbitMQ | 5672, 15672 (management UI) |
-| MailDev | 1025 (SMTP), 1080 (web UI) |
-| Elasticsearch | 9200 |
+```bash
+docker compose up -d      # Start all
+docker compose down        # Stop all
+docker compose down -v     # Stop and delete volumes (full reset)
+```
+
+| Service | Port(s) | Container |
+|---------|---------|-----------|
+| PostgreSQL 16 | 5432 | travel-postgres |
+| Vault 1.17 (dev mode) | 8200 | travel-vault |
+| RabbitMQ 3.13 | 5672, 15672 (management UI) | travel-rabbitmq |
+| MailDev 2.1 | 1025 (SMTP), 1080 (web UI) | travel-maildev |
+| Elasticsearch 8.17 | 9200 | travel-elasticsearch |
+
+Vault secrets are auto-injected by `vault-init` container on first start (`infra/vault/init-secrets.sh`).
+PostgreSQL databases are auto-created via `infra/postgres/init-databases.sql`.
 
 ## Architecture Patterns
 
