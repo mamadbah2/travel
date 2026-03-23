@@ -21,25 +21,25 @@ vault kv put travel-backend/auth-service \
 # Secrets travel-service
 vault kv put travel-backend/travel-service \
   spring.datasource.password=5l6LoHoDiI \
-  spring.rabbitmq.password=guest \
+  spring.rabbitmq.password=PASSWORD_RABBIT \
   jwt.secret=mySecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLong2024
 
 # Secrets payment-service
 vault kv put travel-backend/payment-service \
   spring.datasource.password=5l6LoHoDiI \
-  spring.rabbitmq.password=guest \
+  spring.rabbitmq.password=PASSWORD_RABBIT \
   jwt.secret=mySecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLong2024
 
 # Secrets notification-service
 vault kv put travel-backend/notification-service \
   spring.datasource.password=5l6LoHoDiI \
-  spring.rabbitmq.password=guest \
+  spring.rabbitmq.password=PASSWORD_RABBIT \
   jwt.secret=mySecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLong2024
 
 # Secrets search-service
 vault kv put travel-backend/search-service \
   spring.elasticsearch.password=lbB07FlWk4MDeGYx \
-  spring.rabbitmq.password=guest \
+  spring.rabbitmq.password=PASSWORD_RABBIT \
   jwt.secret=mySecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLong2024
 
 # Secrets api-gateway

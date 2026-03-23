@@ -13,7 +13,7 @@ import sn.travel.search_service.web.dto.responses.SearchResultResponse;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-02-20T14:42:11+0000",
+    date = "2026-03-23T12:49:25+0000",
     comments = "version: 1.6.3, compiler: javac, environment: Java 25.0.1 (Red Hat, Inc.)"
 )
 @Component

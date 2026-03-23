@@ -30,11 +30,9 @@ spring:
             allowed-headers: "*"
             allow-credentials: false
 
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          jwk-set-uri: http://localhost:8081/oauth2/jwks
+  # JWT secret (shared HMAC key, overridden by Vault)
+  jwt:
+    secret: ${VAULT_JWT_SECRET:mySecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLong2024}
 
 management:
   endpoints:
