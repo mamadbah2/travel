@@ -30,9 +30,10 @@ spring:
             allowed-headers: "*"
             allow-credentials: false
 
-  # JWT secret (shared HMAC key, overridden by Vault)
-  jwt:
-    secret: ${VAULT_JWT_SECRET:mySecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLong2024}
+
+# JWT secret (shared HMAC key, overridden by Vault)
+jwt:
+  secret: ${VAULT_JWT_SECRET:mySecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLong2024}
 
 management:
   endpoints:

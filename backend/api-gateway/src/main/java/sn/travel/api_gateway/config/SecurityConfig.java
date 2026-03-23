@@ -26,7 +26,7 @@ import java.util.List;
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
-    @Value("${spring.jwt.secret}")
+    @Value("${jwt.secret}")
     private String jwtSecret;
 
     @Bean
