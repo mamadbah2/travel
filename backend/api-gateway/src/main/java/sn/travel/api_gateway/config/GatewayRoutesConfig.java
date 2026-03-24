@@ -17,6 +17,12 @@ public class GatewayRoutesConfig {
                         .uri("http://localhost:8082"))
                 .route("payment-service", r -> r.path("/api/v1/payments/**")
                         .uri("http://localhost:8083"))
+                .route("rec-service-recommendations", r -> r.path("/api/v1/recommendations/**")
+                        .uri("http://localhost:8086"))
+                .route("rec-service-feedbacks", r -> r.path("/api/v1/feedbacks/**")
+                        .uri("http://localhost:8086"))
+                .route("rec-service-reports", r -> r.path("/api/v1/reports/**")
+                        .uri("http://localhost:8086"))
                 .build();
     }
 }

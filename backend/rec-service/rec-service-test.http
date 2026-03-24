@@ -1,0 +1,99 @@
+### ===== rec-service API Tests =====
+### Variables
+@baseUrl = http://localhost:8086/api/v1
+@authUrl = http://localhost:8081/api/v1/auth
+@travelUrl = http://localhost:8082/api/v1/travels
+
+### ----- 1. Authentification -----
+
+### Login en tant que TRAVELER
+POST {{authUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "voyageur@test.com",
+  "password": "password123"
+}
+
+> {% client.global.set("travelerToken", response.body.token); %}
+
+### Login en tant que ADMIN
+POST {{authUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "admin@test.com",
+  "password": "password123"
+}
+
+> {% client.global.set("adminToken", response.body.token); %}
+
+### ----- 2. Recommandations -----
+
+### Voyages populaires (public)
+GET {{baseUrl}}/recommendations/popular?limit=10
+
+### Voyages similaires (public)
+GET {{baseUrl}}/recommendations/similar/{{travelId}}?limit=5
+
+### Recommandations personnalisees (authentifie)
+GET {{baseUrl}}/recommendations/personalized?limit=10
+Authorization: Bearer {{travelerToken}}
+
+### ----- 3. Feedbacks -----
+
+### Creer un feedback (TRAVELER)
+POST {{baseUrl}}/feedbacks
+Content-Type: application/json
+Authorization: Bearer {{travelerToken}}
+
+{
+  "travelId": "{{travelId}}",
+  "rating": 5,
+  "comment": "Excellent voyage, je recommande vivement !"
+}
+
+### Feedbacks d'un voyage (public)
+GET {{baseUrl}}/feedbacks/travel/{{travelId}}?page=0&size=20
+
+### Mes feedbacks (authentifie)
+GET {{baseUrl}}/feedbacks/me?page=0&size=20
+Authorization: Bearer {{travelerToken}}
+
+### Modifier un feedback (TRAVELER)
+PUT {{baseUrl}}/feedbacks/{{feedbackId}}
+Content-Type: application/json
+Authorization: Bearer {{travelerToken}}
+
+{
+  "rating": 4,
+  "comment": "Tres bon voyage, quelques ameliorations possibles."
+}
+
+### Supprimer un feedback (TRAVELER/ADMIN)
+DELETE {{baseUrl}}/feedbacks/{{feedbackId}}
+Authorization: Bearer {{travelerToken}}
+
+### ----- 4. Signalements -----
+
+### Creer un signalement (authentifie)
+POST {{baseUrl}}/reports
+Content-Type: application/json
+Authorization: Bearer {{travelerToken}}
+
+{
+  "reportedUserId": "{{reportedUserId}}",
+  "reason": "Comportement inapproprie durant le voyage"
+}
+
+### Lister les signalements (ADMIN)
+GET {{baseUrl}}/reports?page=0&size=20
+Authorization: Bearer {{adminToken}}
+
+### Detail d'un signalement (ADMIN)
+GET {{baseUrl}}/reports/{{reportId}}
+Authorization: Bearer {{adminToken}}
+
+### Resoudre un signalement (ADMIN)
+PUT {{baseUrl}}/reports/{{reportId}}/resolve
+Authorization: Bearer {{adminToken}}

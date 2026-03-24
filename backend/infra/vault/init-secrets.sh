@@ -42,6 +42,12 @@ vault kv put travel-backend/search-service \
   spring.rabbitmq.password=PASSWORD_RABBIT \
   jwt.secret=mySecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLong2024
 
+# Secrets rec-service
+vault kv put travel-backend/rec-service \
+  spring.neo4j.authentication.password=neo4jpassword \
+  spring.rabbitmq.password=PASSWORD_RABBIT \
+  jwt.secret=mySecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLong2024
+
 # Secrets api-gateway
 vault kv put kv/api-gateway \
   jwt.secret=mySecretKeyForJWTTokenGenerationThatIsAtLeast256BitsLong2024
