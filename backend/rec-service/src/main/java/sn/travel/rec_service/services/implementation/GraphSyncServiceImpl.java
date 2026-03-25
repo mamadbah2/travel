@@ -140,13 +140,11 @@ public class GraphSyncServiceImpl implements GraphSyncService {
     private DestinationNode resolveDestination(String name, String country, String city) {
         return destinationNodeRepository
                 .findByNameAndCountryAndCity(name, country, city)
-                .orElseGet(() -> destinationNodeRepository.save(
-                        DestinationNode.builder()
-                                .name(name)
-                                .country(country)
-                                .city(city)
-                                .build()
-                ));
+                .orElseGet(() -> DestinationNode.builder()
+                        .name(name)
+                        .country(country)
+                        .city(city)
+                        .build());
     }
 
     private List<ActivityNode> resolveActivities(List<TravelCreatedEvent.ActivityData> activities) {
@@ -168,11 +166,9 @@ public class GraphSyncServiceImpl implements GraphSyncService {
     private ActivityNode resolveActivity(String name, String description) {
         return activityNodeRepository
                 .findByName(name)
-                .orElseGet(() -> activityNodeRepository.save(
-                        ActivityNode.builder()
-                                .name(name)
-                                .description(description)
-                                .build()
-                ));
+                .orElseGet(() -> ActivityNode.builder()
+                        .name(name)
+                        .description(description)
+                        .build());
     }
 }
