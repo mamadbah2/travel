@@ -1,0 +1,11 @@
+spring:
+  cloud:
+    vault:
+      uri: http://vault:8200
+
+gateway:
+  routes:
+    auth-service-uri: http://auth-service:8081
+    travel-service-uri: http://travel-service:8082
+    payment-service-uri: http://payment-service:8083
+    rec-service-uri: http://rec-service:8086
