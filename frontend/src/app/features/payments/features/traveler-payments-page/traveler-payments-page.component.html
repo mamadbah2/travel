@@ -1,0 +1,69 @@
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <h1 class="text-3xl font-bold text-[#223843] mb-2">My Payments</h1>
+  <p class="text-[#223843]/60 mb-6">Track all your payment transactions</p>
+
+  @if (loading()) {
+    <div class="flex items-center justify-center py-20">
+      <div class="w-8 h-8 border-3 border-[#d77a61] border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  } @else {
+    <!-- Summary Cards -->
+    @if (payments().length > 0) {
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-xl border border-[#dbd3d8]/30 p-4">
+          <p class="text-sm text-[#223843]/50">Total Spent</p>
+          <p class="text-2xl font-bold text-[#223843]">
+            {{ totalSpent() | number:'1.2-2' }} EUR
+          </p>
+        </div>
+        <div class="bg-white rounded-xl border border-[#dbd3d8]/30 p-4">
+          <p class="text-sm text-[#223843]/50">Successful</p>
+          <p class="text-2xl font-bold text-emerald-600">{{ successCount() }}</p>
+        </div>
+        <div class="bg-white rounded-xl border border-[#dbd3d8]/30 p-4">
+          <p class="text-sm text-[#223843]/50">Pending</p>
+          <p class="text-2xl font-bold text-amber-600">{{ pendingCount() }}</p>
+        </div>
+      </div>
+    }
+
+    <div class="bg-white rounded-2xl border border-[#dbd3d8]/30 overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-[#dbd3d8]/50 text-left text-[#223843]/50">
+            <th class="py-3 px-4 font-medium">Travel</th>
+            <th class="py-3 px-4 font-medium">Amount</th>
+            <th class="py-3 px-4 font-medium">Method</th>
+            <th class="py-3 px-4 font-medium">Status</th>
+            <th class="py-3 px-4 font-medium">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of payments(); track p.id) {
+            <tr class="border-b border-[#dbd3d8]/20 hover:bg-[#eff1f3]/50">
+              <td class="py-3 px-4 font-medium text-[#223843]">{{ p.travelTitle }}</td>
+              <td class="py-3 px-4 text-[#223843]">{{ p.amount | number:'1.2-2' }} {{ p.currency }}</td>
+              <td class="py-3 px-4 text-[#223843]/60">{{ p.method }}</td>
+              <td class="py-3 px-4"><app-status-badge [status]="p.status" /></td>
+              <td class="py-3 px-4 text-[#223843]/50">{{ p.createdAt | date:'short' }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="py-12 text-center text-[#223843]/50">No payments yet.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPages() > 1) {
+      <app-pagination
+        [currentPage]="page()"
+        [totalPages]="totalPages()"
+        [isFirst]="page() === 0"
+        [isLast]="page() >= totalPages() - 1"
+        (pageChange)="loadPage($event)"
+      />
+    }
+  }
+</div>

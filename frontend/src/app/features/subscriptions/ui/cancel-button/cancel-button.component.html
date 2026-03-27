@@ -1,0 +1,19 @@
+    <div class="bg-white rounded-xl border border-[#dbd3d8]/30 p-4">
+      @if (canCancel()) {
+        <p class="text-sm text-[#223843]/60 mb-3">
+          You have <span class="font-semibold text-[#d77a61]">{{ daysLeft() }} day{{ daysLeft() === 1 ? '' : 's' }}</span>
+          left to cancel this subscription.
+        </p>
+        <button
+          (click)="confirmCancel.emit()"
+          [disabled]="cancelling()"
+          class="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+        >
+          {{ cancelling() ? 'Cancelling...' : 'Cancel subscription' }}
+        </button>
+      } @else {
+        <p class="text-sm text-[#223843]/50">
+          Cancellation window has passed. Subscriptions must be cancelled at least 3 days before departure.
+        </p>
+      }
+    </div>

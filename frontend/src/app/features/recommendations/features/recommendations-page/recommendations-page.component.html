@@ -1,0 +1,45 @@
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <h1 class="text-3xl font-bold text-[#223843] mb-2">Recommended for You</h1>
+  <p class="text-[#223843]/60 mb-8">Personalized travel suggestions based on your interests</p>
+
+  @if (loading()) {
+    <div class="flex items-center justify-center py-20">
+      <div class="w-8 h-8 border-3 border-[#d77a61] border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      @for (rec of recommendations(); track rec.travelId) {
+        <a [routerLink]="['/travels', rec.travelId]"
+           class="bg-white rounded-2xl border border-[#dbd3d8]/30 p-5 hover:shadow-md transition-shadow group block">
+          <div class="flex items-start justify-between mb-3">
+            <h3 class="text-lg font-semibold text-[#223843] group-hover:text-[#d77a61] transition-colors">
+              {{ rec.title }}
+            </h3>
+            <div class="flex items-center gap-1 shrink-0 ml-3">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
+                   [class]="rec.score >= 90 ? 'bg-emerald-100 text-emerald-700' : rec.score >= 80 ? 'bg-amber-100 text-amber-700' : 'bg-[#eff1f3] text-[#223843]'">
+                {{ rec.score }}
+              </div>
+            </div>
+          </div>
+          <p class="text-sm text-[#223843]/60 line-clamp-2 mb-3">{{ rec.description }}</p>
+          <div class="flex flex-wrap gap-1.5 mb-3">
+            @for (dest of rec.destinations; track dest) {
+              <span class="px-2 py-0.5 rounded-full text-xs bg-[#d8b4a0]/20 text-[#223843]/70">{{ dest }}</span>
+            }
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="font-semibold text-[#d77a61]">{{ rec.price | number:'1.0-0' }} EUR</span>
+            <span class="text-[#223843]/50">{{ rec.startDate | date:'mediumDate' }} — {{ rec.endDate | date:'mediumDate' }}</span>
+          </div>
+          <p class="text-xs text-[#223843]/40 mt-2 italic">{{ rec.reason }}</p>
+        </a>
+      } @empty {
+        <div class="col-span-2 text-center py-20">
+          <p class="text-xl text-[#223843]/50">No recommendations available yet</p>
+          <p class="text-sm text-[#223843]/40 mt-2">Subscribe to some travels to get personalized suggestions</p>
+        </div>
+      }
+    </div>
+  }
+</div>

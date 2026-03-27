@@ -1,0 +1,43 @@
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h1 class="text-3xl font-bold text-[#223843] mb-8">My Subscriptions</h1>
+
+      @if (store.loading()) {
+        <div class="flex items-center justify-center py-20">
+          <div class="w-8 h-8 border-3 border-[#d77a61] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      }
+
+      @if (store.error(); as error) {
+        <div class="text-center py-20">
+          <p class="text-red-600">{{ error }}</p>
+          <button (click)="store.loadSubscriptions(0)" class="mt-4 text-sm text-[#d77a61] hover:underline cursor-pointer">
+            Try again
+          </button>
+        </div>
+      }
+
+      @if (!store.loading() && !store.error()) {
+        @if (store.isEmpty()) {
+          <div class="text-center py-20">
+            <p class="text-xl text-[#223843]/50">No subscriptions yet</p>
+            <p class="mt-2 text-sm text-[#223843]/40">Browse travels to find your next adventure!</p>
+          </div>
+        } @else {
+          <div class="space-y-3">
+            @for (sub of store.subscriptions(); track sub.id) {
+              <app-subscription-card [subscription]="sub" />
+            }
+          </div>
+
+          @if (store.pagination().totalPages > 1) {
+            <app-pagination
+              [currentPage]="store.pagination().page"
+              [totalPages]="store.pagination().totalPages"
+              [isFirst]="store.pagination().first"
+              [isLast]="store.pagination().last"
+              (pageChange)="store.loadSubscriptions($event)"
+            />
+          }
+        }
+      }
+    </div>

@@ -1,0 +1,51 @@
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-[#dbd3d8]/50 text-left text-[#223843]/50">
+            <th class="py-3 px-4 font-medium">Name</th>
+            <th class="py-3 px-4 font-medium">Email</th>
+            <th class="py-3 px-4 font-medium">Role</th>
+            <th class="py-3 px-4 font-medium">Status</th>
+            <th class="py-3 px-4 font-medium">Joined</th>
+            <th class="py-3 px-4 font-medium text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users(); track user.id) {
+            <tr class="border-b border-[#dbd3d8]/20 hover:bg-[#eff1f3]/50">
+              <td class="py-3 px-4">
+                <a [routerLink]="['/admin/users', user.id]" class="font-medium text-[#223843] hover:text-[#d77a61]">
+                  {{ user.firstName }} {{ user.lastName }}
+                </a>
+              </td>
+              <td class="py-3 px-4 text-[#223843]/60">{{ user.email }}</td>
+              <td class="py-3 px-4">
+                <span class="text-xs font-medium px-2 py-0.5 rounded-full"
+                  [class]="user.role === 'ADMIN' ? 'bg-purple-100 text-purple-800' :
+                           user.role === 'MANAGER' ? 'bg-blue-100 text-blue-800' :
+                           'bg-[#d8b4a0]/30 text-[#223843]'">
+                  {{ user.role }}
+                </span>
+              </td>
+              <td class="py-3 px-4"><app-status-badge [status]="user.status" /></td>
+              <td class="py-3 px-4 text-[#223843]/50">{{ formatDate(user.createdAt) }}</td>
+              <td class="py-3 px-4 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  @if (user.status === 'ACTIVE') {
+                    <button (click)="ban.emit(user.id)" class="px-2 py-1 text-xs text-amber-700 hover:bg-amber-50 rounded cursor-pointer">Ban</button>
+                  }
+                  @if (user.status === 'BANNED') {
+                    <button (click)="unban.emit(user.id)" class="px-2 py-1 text-xs text-emerald-700 hover:bg-emerald-50 rounded cursor-pointer">Unban</button>
+                  }
+                  <button (click)="deleteUser.emit(user.id)" class="px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded cursor-pointer">Delete</button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="py-12 text-center text-[#223843]/50">No users found.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>

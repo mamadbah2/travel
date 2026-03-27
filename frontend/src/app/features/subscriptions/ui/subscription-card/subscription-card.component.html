@@ -1,0 +1,12 @@
+    <a [routerLink]="['/subscriptions', subscription().id]"
+       class="block bg-white rounded-xl border border-[#dbd3d8]/30 p-4 hover:shadow-md transition-shadow group">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="font-semibold text-[#223843] group-hover:text-[#d77a61] transition-colors">
+          {{ subscription().travelTitle }}
+        </h3>
+        <app-status-badge [status]="subscription().status" />
+      </div>
+      <p class="text-sm text-[#223843]/50">
+        Subscribed on {{ date() }}
+      </p>
+    </a>

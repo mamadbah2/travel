@@ -1,0 +1,91 @@
+    <form (ngSubmit)="onSubmit()" class="space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="firstName" class="block text-sm font-medium text-[#223843] mb-1">First name</label>
+          <input
+            id="firstName"
+            type="text"
+            [(ngModel)]="firstName"
+            name="firstName"
+            required
+            minlength="2"
+            class="w-full px-4 py-3 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] placeholder-[#dbd3d8] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 focus:border-[#d77a61] transition-colors"
+            placeholder="John"
+          />
+        </div>
+        <div>
+          <label for="lastName" class="block text-sm font-medium text-[#223843] mb-1">Last name</label>
+          <input
+            id="lastName"
+            type="text"
+            [(ngModel)]="lastName"
+            name="lastName"
+            required
+            minlength="2"
+            class="w-full px-4 py-3 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] placeholder-[#dbd3d8] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 focus:border-[#d77a61] transition-colors"
+            placeholder="Doe"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label for="regEmail" class="block text-sm font-medium text-[#223843] mb-1">Email</label>
+        <input
+          id="regEmail"
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          required
+          class="w-full px-4 py-3 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] placeholder-[#dbd3d8] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 focus:border-[#d77a61] transition-colors"
+          placeholder="you@example.com"
+        />
+      </div>
+
+      <div>
+        <label for="phone" class="block text-sm font-medium text-[#223843] mb-1">Phone number <span class="text-[#dbd3d8]">(optional)</span></label>
+        <input
+          id="phone"
+          type="tel"
+          [(ngModel)]="phoneNumber"
+          name="phoneNumber"
+          class="w-full px-4 py-3 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] placeholder-[#dbd3d8] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 focus:border-[#d77a61] transition-colors"
+          placeholder="+221 77 000 00 00"
+        />
+      </div>
+
+      <div>
+        <label for="regPassword" class="block text-sm font-medium text-[#223843] mb-1">Password</label>
+        <input
+          id="regPassword"
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          required
+          minlength="8"
+          class="w-full px-4 py-3 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] placeholder-[#dbd3d8] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 focus:border-[#d77a61] transition-colors"
+          placeholder="Min. 8 characters"
+        />
+      </div>
+
+      <div>
+        <label for="role" class="block text-sm font-medium text-[#223843] mb-1">I am a</label>
+        <select
+          id="role"
+          [(ngModel)]="role"
+          name="role"
+          required
+          class="w-full px-4 py-3 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 focus:border-[#d77a61] transition-colors"
+        >
+          <option value="TRAVELER">Traveler</option>
+          <option value="MANAGER">Travel Manager</option>
+        </select>
+      </div>
+
+      <button
+        type="submit"
+        [disabled]="loading()"
+        class="w-full py-3 rounded-lg bg-[#223843] text-white font-medium hover:bg-[#223843]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+      >
+        {{ loading() ? 'Creating account...' : 'Create account' }}
+      </button>
+    </form>

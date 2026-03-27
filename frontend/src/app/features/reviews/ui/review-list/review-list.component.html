@@ -1,0 +1,36 @@
+@if (reviews().length > 0) {
+  <div class="space-y-4">
+    <!-- Average rating -->
+    @if (averageRating() > 0) {
+      <div class="flex items-center gap-2 mb-2">
+        <div class="flex">
+          @for (filled of starsArray(averageRating()); track $index) {
+            <span class="text-lg" [class]="filled ? 'text-amber-400' : 'text-[#dbd3d8]'">&#9733;</span>
+          }
+        </div>
+        <span class="text-sm font-medium text-[#223843]">{{ averageRating().toFixed(1) }}</span>
+        <span class="text-sm text-[#223843]/50">({{ reviews().length }} reviews)</span>
+      </div>
+    }
+
+    @for (review of reviews(); track review.id) {
+      <div class="border-b border-[#dbd3d8]/20 pb-4 last:border-0">
+        <div class="flex items-center gap-2 mb-1">
+          <div class="w-7 h-7 rounded-full bg-[#d8b4a0] flex items-center justify-center text-xs font-bold text-white">
+            {{ review.travelerName.split(' ').map(n => n[0]).join('') }}
+          </div>
+          <span class="text-sm font-medium text-[#223843]">{{ review.travelerName }}</span>
+          <div class="flex ml-1">
+            @for (filled of starsArray(review.rating); track $index) {
+              <span class="text-sm" [class]="filled ? 'text-amber-400' : 'text-[#dbd3d8]'">&#9733;</span>
+            }
+          </div>
+          <span class="text-xs text-[#223843]/40 ml-auto">{{ review.createdAt | date:'mediumDate' }}</span>
+        </div>
+        <p class="text-sm text-[#223843]/70 ml-9">{{ review.comment }}</p>
+      </div>
+    }
+  </div>
+} @else {
+  <p class="text-sm text-[#223843]/50 py-4">No reviews yet. Be the first to review!</p>
+}

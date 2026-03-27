@@ -1,0 +1,77 @@
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <h1 class="text-3xl font-bold text-[#223843] mb-8">Platform Analytics</h1>
+
+  @if (loading()) {
+    <div class="flex items-center justify-center py-20">
+      <div class="w-8 h-8 border-3 border-[#d77a61] border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  } @else {
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+      <div class="bg-white rounded-xl border border-[#dbd3d8]/30 p-4">
+        <p class="text-xs text-[#223843]/50 uppercase tracking-wide">Users</p>
+        <p class="text-2xl font-bold text-[#223843] mt-1">{{ totalUsers() }}</p>
+      </div>
+      <div class="bg-white rounded-xl border border-[#dbd3d8]/30 p-4">
+        <p class="text-xs text-[#223843]/50 uppercase tracking-wide">Managers</p>
+        <p class="text-2xl font-bold text-[#223843] mt-1">{{ totalManagers() }}</p>
+      </div>
+      <div class="bg-white rounded-xl border border-[#dbd3d8]/30 p-4">
+        <p class="text-xs text-[#223843]/50 uppercase tracking-wide">Travelers</p>
+        <p class="text-2xl font-bold text-[#223843] mt-1">{{ totalTravelers() }}</p>
+      </div>
+      <div class="bg-white rounded-xl border border-[#dbd3d8]/30 p-4">
+        <p class="text-xs text-[#223843]/50 uppercase tracking-wide">Published</p>
+        <p class="text-2xl font-bold text-[#223843] mt-1">{{ publishedTravels() }}</p>
+      </div>
+      <div class="bg-white rounded-xl border border-[#dbd3d8]/30 p-4">
+        <p class="text-xs text-[#223843]/50 uppercase tracking-wide">Revenue</p>
+        <p class="text-2xl font-bold text-emerald-600 mt-1">{{ totalRevenue() | number:'1.0-0' }}€</p>
+      </div>
+      <div class="bg-white rounded-xl border border-[#dbd3d8]/30 p-4">
+        <p class="text-xs text-[#223843]/50 uppercase tracking-wide">Payments</p>
+        <p class="text-2xl font-bold text-[#223843] mt-1">{{ successPayments() }}</p>
+      </div>
+    </div>
+
+    <!-- Manager Ranking -->
+    <div class="bg-white rounded-2xl border border-[#dbd3d8]/30 p-6">
+      <h2 class="text-xl font-semibold text-[#223843] mb-4">Manager Ranking</h2>
+      <p class="text-sm text-[#223843]/50 mb-4">Sorted by performance score</p>
+
+      @if (managerRanking().length > 0) {
+        <div class="space-y-3">
+          @for (manager of managerRanking(); track manager.id; let i = $index) {
+            <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-[#eff1f3]/50 transition-colors">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+                   [class]="i === 0 ? 'bg-amber-100 text-amber-700' : i === 1 ? 'bg-gray-100 text-gray-600' : i === 2 ? 'bg-orange-100 text-orange-700' : 'bg-[#eff1f3] text-[#223843]/60'">
+                {{ i + 1 }}
+              </div>
+              <div class="w-10 h-10 rounded-full bg-[#d8b4a0] flex items-center justify-center text-sm font-bold text-white shrink-0">
+                {{ manager.firstName[0] }}{{ manager.lastName[0] }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <a [routerLink]="['/admin/users', manager.id]" class="font-medium text-[#223843] hover:text-[#d77a61] transition-colors">
+                  {{ manager.firstName }} {{ manager.lastName }}
+                </a>
+                <p class="text-xs text-[#223843]/50">{{ manager.email }}</p>
+              </div>
+              <div class="text-right shrink-0">
+                <div class="flex items-center gap-2">
+                  <div class="w-24 h-2 bg-[#eff1f3] rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all"
+                         [class]="(manager.performanceScore ?? 0) >= 90 ? 'bg-emerald-500' : (manager.performanceScore ?? 0) >= 70 ? 'bg-amber-500' : 'bg-red-500'"
+                         [style.width.%]="manager.performanceScore ?? 0"></div>
+                  </div>
+                  <span class="text-sm font-semibold text-[#223843] w-8 text-right">{{ manager.performanceScore }}</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="text-sm text-[#223843]/50 py-4">No managers with performance scores yet</p>
+      }
+    </div>
+  }
+</div>

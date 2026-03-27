@@ -1,0 +1,157 @@
+    <nav class="bg-white border-b border-[#dbd3d8]/50 sticky top-0 z-40">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <!-- Logo -->
+          <a routerLink="/" class="flex items-center gap-2 text-[#223843] font-bold text-xl tracking-tight">
+            <span class="text-[#d77a61]">✦</span> TravelApp
+          </a>
+
+          <!-- Desktop Nav -->
+          <div class="hidden md:flex items-center gap-1">
+            <a routerLink="/travels" routerLinkActive="bg-[#223843]/5 text-[#223843]"
+               class="px-3 py-2 rounded-lg text-sm font-medium text-[#223843]/70 hover:text-[#223843] hover:bg-[#223843]/5 transition-colors">
+              Travels
+            </a>
+
+            <a routerLink="/search" routerLinkActive="bg-[#223843]/5 text-[#223843]"
+               class="px-3 py-2 rounded-lg text-sm font-medium text-[#223843]/70 hover:text-[#223843] hover:bg-[#223843]/5 transition-colors">
+              Search
+            </a>
+
+            @if (isAuthenticated()) {
+              @if (isTraveler()) {
+                <a routerLink="/subscriptions" routerLinkActive="bg-[#223843]/5 text-[#223843]"
+                   class="px-3 py-2 rounded-lg text-sm font-medium text-[#223843]/70 hover:text-[#223843] hover:bg-[#223843]/5 transition-colors">
+                  My Subscriptions
+                </a>
+                <a routerLink="/payments" routerLinkActive="bg-[#223843]/5 text-[#223843]"
+                   class="px-3 py-2 rounded-lg text-sm font-medium text-[#223843]/70 hover:text-[#223843] hover:bg-[#223843]/5 transition-colors">
+                  Payments
+                </a>
+                <a routerLink="/notifications" routerLinkActive="bg-[#223843]/5 text-[#223843]"
+                   class="px-3 py-2 rounded-lg text-sm font-medium text-[#223843]/70 hover:text-[#223843] hover:bg-[#223843]/5 transition-colors">
+                  Notifications
+                </a>
+              }
+              @if (isManager()) {
+                <a routerLink="/manager" routerLinkActive="bg-[#223843]/5 text-[#223843]"
+                   class="px-3 py-2 rounded-lg text-sm font-medium text-[#223843]/70 hover:text-[#223843] hover:bg-[#223843]/5 transition-colors">
+                  Manager
+                </a>
+              }
+              @if (isAdmin()) {
+                <a routerLink="/admin" routerLinkActive="bg-[#223843]/5 text-[#223843]"
+                   class="px-3 py-2 rounded-lg text-sm font-medium text-[#223843]/70 hover:text-[#223843] hover:bg-[#223843]/5 transition-colors">
+                  Admin
+                </a>
+              }
+            }
+          </div>
+
+          <!-- Right side -->
+          <div class="hidden md:flex items-center gap-3">
+            @if (isAuthenticated()) {
+              <a routerLink="/profile"
+                 class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-[#223843]/70 hover:text-[#223843] hover:bg-[#223843]/5 transition-colors">
+                <span class="w-7 h-7 rounded-full bg-[#d8b4a0] flex items-center justify-center text-xs font-bold text-white">
+                  {{ userInitials() }}
+                </span>
+                {{ userName() }}
+              </a>
+              <button
+                (click)="onLogout()"
+                class="px-4 py-2 rounded-lg text-sm font-medium text-[#d77a61] hover:bg-[#d77a61]/10 transition-colors cursor-pointer"
+              >
+                Logout
+              </button>
+            } @else {
+              <a routerLink="/auth/login"
+                 class="px-4 py-2 rounded-lg text-sm font-medium text-[#223843] hover:bg-[#223843]/5 transition-colors">
+                Log in
+              </a>
+              <a routerLink="/auth/register"
+                 class="px-4 py-2 rounded-lg text-sm font-medium bg-[#223843] text-white hover:bg-[#223843]/90 transition-colors">
+                Sign up
+              </a>
+            }
+          </div>
+
+          <!-- Mobile hamburger -->
+          <button
+            (click)="mobileMenuOpen.set(!mobileMenuOpen())"
+            class="md:hidden p-2 rounded-lg text-[#223843]/70 hover:bg-[#223843]/5 cursor-pointer"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              @if (mobileMenuOpen()) {
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              } @else {
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+              }
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile menu -->
+      @if (mobileMenuOpen()) {
+        <div class="md:hidden border-t border-[#dbd3d8]/50 bg-white">
+          <div class="px-4 py-3 space-y-1">
+            <a routerLink="/travels" (click)="mobileMenuOpen.set(false)"
+               class="block px-3 py-2 rounded-lg text-sm font-medium text-[#223843]/70 hover:bg-[#223843]/5">
+              Travels
+            </a>
+            <a routerLink="/search" (click)="mobileMenuOpen.set(false)"
+               class="block px-3 py-2 rounded-lg text-sm font-medium text-[#223843]/70 hover:bg-[#223843]/5">
+              Search
+            </a>
+            @if (isAuthenticated()) {
+              @if (isTraveler()) {
+                <a routerLink="/subscriptions" (click)="mobileMenuOpen.set(false)"
+                   class="block px-3 py-2 rounded-lg text-sm font-medium text-[#223843]/70 hover:bg-[#223843]/5">
+                  My Subscriptions
+                </a>
+                <a routerLink="/payments" (click)="mobileMenuOpen.set(false)"
+                   class="block px-3 py-2 rounded-lg text-sm font-medium text-[#223843]/70 hover:bg-[#223843]/5">
+                  Payments
+                </a>
+                <a routerLink="/notifications" (click)="mobileMenuOpen.set(false)"
+                   class="block px-3 py-2 rounded-lg text-sm font-medium text-[#223843]/70 hover:bg-[#223843]/5">
+                  Notifications
+                </a>
+              }
+              @if (isManager()) {
+                <a routerLink="/manager" (click)="mobileMenuOpen.set(false)"
+                   class="block px-3 py-2 rounded-lg text-sm font-medium text-[#223843]/70 hover:bg-[#223843]/5">
+                  Manager
+                </a>
+              }
+              @if (isAdmin()) {
+                <a routerLink="/admin" (click)="mobileMenuOpen.set(false)"
+                   class="block px-3 py-2 rounded-lg text-sm font-medium text-[#223843]/70 hover:bg-[#223843]/5">
+                  Admin
+                </a>
+              }
+              <a routerLink="/profile" (click)="mobileMenuOpen.set(false)"
+                 class="block px-3 py-2 rounded-lg text-sm font-medium text-[#223843]/70 hover:bg-[#223843]/5">
+                Profile
+              </a>
+              <button
+                (click)="onLogout(); mobileMenuOpen.set(false)"
+                class="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-[#d77a61] hover:bg-[#d77a61]/10 cursor-pointer"
+              >
+                Logout
+              </button>
+            } @else {
+              <a routerLink="/auth/login" (click)="mobileMenuOpen.set(false)"
+                 class="block px-3 py-2 rounded-lg text-sm font-medium text-[#223843]/70 hover:bg-[#223843]/5">
+                Log in
+              </a>
+              <a routerLink="/auth/register" (click)="mobileMenuOpen.set(false)"
+                 class="block px-3 py-2 rounded-lg text-sm font-medium bg-[#223843] text-white text-center rounded-lg">
+                Sign up
+              </a>
+            }
+          </div>
+        </div>
+      }
+    </nav>

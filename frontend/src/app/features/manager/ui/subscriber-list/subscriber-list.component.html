@@ -1,0 +1,22 @@
+    <div class="space-y-3">
+      <h3 class="text-lg font-semibold text-[#223843]">Subscribers ({{ subscribers().length }})</h3>
+      @for (sub of subscribers(); track sub.id) {
+        <div class="bg-white rounded-xl border border-[#dbd3d8]/30 p-4 flex items-center justify-between gap-4">
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-[#223843] truncate">Traveler {{ sub.travelerId.slice(0, 8) }}...</p>
+            <p class="text-xs text-[#223843]/50">Subscribed {{ formatDate(sub.createdAt) }}</p>
+          </div>
+          <div class="flex items-center gap-3 shrink-0">
+            <app-status-badge [status]="sub.status" />
+            <button
+              (click)="remove.emit(sub.id)"
+              class="px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      } @empty {
+        <p class="text-sm text-[#223843]/50">No subscribers yet.</p>
+      }
+    </div>

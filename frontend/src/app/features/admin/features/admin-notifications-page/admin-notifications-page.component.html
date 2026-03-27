@@ -1,0 +1,42 @@
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h1 class="text-3xl font-bold text-[#223843] mb-6">All Notifications</h1>
+
+      @if (loading()) {
+        <div class="flex items-center justify-center py-20">
+          <div class="w-8 h-8 border-3 border-[#d77a61] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      } @else {
+        <div class="space-y-3">
+          @for (n of notifications(); track n.id) {
+            <div class="bg-white rounded-xl border border-[#dbd3d8]/30 p-4">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <app-status-badge [status]="n.type" />
+                  <app-status-badge [status]="n.status" />
+                </div>
+                <span class="text-xs text-[#223843]/40">{{ n.createdAt | date:'short' }}</span>
+              </div>
+              <p class="font-medium text-sm text-[#223843]">{{ n.subject }}</p>
+              <p class="text-sm text-[#223843]/60 mt-1">To: {{ n.recipientEmail }}</p>
+              @if (n.failureReason) {
+                <p class="text-xs text-red-600 mt-1">{{ n.failureReason }}</p>
+              }
+            </div>
+          } @empty {
+            <div class="text-center py-20">
+              <p class="text-[#223843]/50">No notifications found.</p>
+            </div>
+          }
+        </div>
+
+        @if (totalPages() > 1) {
+          <app-pagination
+            [currentPage]="page()"
+            [totalPages]="totalPages()"
+            [isFirst]="page() === 0"
+            [isLast]="page() >= totalPages() - 1"
+            (pageChange)="loadPage($event)"
+          />
+        }
+      }
+    </div>

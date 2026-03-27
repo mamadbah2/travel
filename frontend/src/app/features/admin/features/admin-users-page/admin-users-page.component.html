@@ -1,0 +1,77 @@
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h1 class="text-3xl font-bold text-[#223843] mb-6">User Management</h1>
+
+      <!-- Filters -->
+      <div class="flex flex-wrap items-center gap-3 mb-6">
+        <input
+          type="text"
+          [ngModel]="searchInput()"
+          (ngModelChange)="onSearchChange($event)"
+          placeholder="Search users..."
+          class="px-4 py-2.5 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] text-sm placeholder-[#dbd3d8] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 focus:border-[#d77a61] transition-colors w-64"
+        />
+        <select
+          [ngModel]="roleFilter()"
+          (ngModelChange)="onRoleFilter($event)"
+          class="px-3 py-2.5 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] text-sm focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 transition-colors"
+        >
+          <option [ngValue]="null">All roles</option>
+          <option value="ADMIN">Admin</option>
+          <option value="MANAGER">Manager</option>
+          <option value="TRAVELER">Traveler</option>
+        </select>
+        <select
+          [ngModel]="statusFilter()"
+          (ngModelChange)="onStatusFilter($event)"
+          class="px-3 py-2.5 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] text-sm focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 transition-colors"
+        >
+          <option [ngValue]="null">All statuses</option>
+          <option value="ACTIVE">Active</option>
+          <option value="BANNED">Banned</option>
+          <option value="PENDING_VERIFICATION">Pending</option>
+        </select>
+        @if (store.activeFilter() !== 'all') {
+          <button (click)="clearFilters()" class="text-sm text-[#d77a61] hover:underline cursor-pointer">
+            Clear filters
+          </button>
+        }
+      </div>
+
+      <!-- Loading -->
+      @if (store.loading()) {
+        <div class="flex items-center justify-center py-20">
+          <div class="w-8 h-8 border-3 border-[#d77a61] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      }
+
+      @if (store.error(); as error) {
+        <div class="text-center py-20">
+          <p class="text-red-600">{{ error }}</p>
+        </div>
+      }
+
+      @if (!store.loading() && !store.error()) {
+        <div class="bg-white rounded-2xl border border-[#dbd3d8]/30 overflow-hidden">
+          <app-user-table
+            [users]="store.users()"
+            (ban)="onBan($event)"
+            (unban)="onUnban($event)"
+            (deleteUser)="onDelete($event)"
+          />
+        </div>
+
+        @if (store.pagination().totalPages > 1) {
+          <app-pagination
+            [currentPage]="store.pagination().page"
+            [totalPages]="store.pagination().totalPages"
+            [isFirst]="store.pagination().first"
+            [isLast]="store.pagination().last"
+            (pageChange)="store.loadUsers({ page: $event })"
+          />
+        }
+
+        <p class="text-sm text-[#223843]/40 mt-2">
+          {{ store.pagination().totalElements }} users total
+        </p>
+      }
+    </div>

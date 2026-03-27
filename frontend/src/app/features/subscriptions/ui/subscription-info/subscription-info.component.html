@@ -1,0 +1,24 @@
+    <div class="bg-white rounded-2xl border border-[#dbd3d8]/30 p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-bold text-[#223843]">Subscription</h2>
+        <app-status-badge [status]="subscription().status" />
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <p class="text-sm text-[#223843]/50">Travel</p>
+          <a [routerLink]="['/travels', subscription().travelId]"
+             class="font-medium text-[#d77a61] hover:underline">
+            {{ subscription().travelTitle }}
+          </a>
+        </div>
+        <div>
+          <p class="text-sm text-[#223843]/50">Subscribed on</p>
+          <p class="font-medium text-[#223843]">{{ createdDate() }}</p>
+        </div>
+        <div>
+          <p class="text-sm text-[#223843]/50">Last updated</p>
+          <p class="font-medium text-[#223843]">{{ updatedDate() }}</p>
+        </div>
+      </div>
+    </div>

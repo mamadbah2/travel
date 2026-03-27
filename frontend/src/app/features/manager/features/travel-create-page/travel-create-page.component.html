@@ -1,0 +1,10 @@
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h1 class="text-3xl font-bold text-[#223843] mb-8">Create new travel</h1>
+      <div class="bg-white rounded-2xl border border-[#dbd3d8]/30 p-6">
+        <app-travel-form
+          [loading]="loading()"
+          submitLabel="Create travel"
+          (submitTravel)="onCreate($event)"
+        />
+      </div>
+    </div>

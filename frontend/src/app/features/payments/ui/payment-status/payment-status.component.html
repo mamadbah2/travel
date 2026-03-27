@@ -1,0 +1,39 @@
+    @if (loading()) {
+      <div class="bg-white rounded-xl border border-[#dbd3d8]/30 p-4">
+        <p class="text-sm text-[#223843]/50">Loading payment info...</p>
+      </div>
+    } @else if (payment(); as p) {
+      <div class="bg-white rounded-xl border border-[#dbd3d8]/30 p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <h4 class="font-semibold text-[#223843]">Payment</h4>
+          <app-status-badge [status]="p.status" />
+        </div>
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div>
+            <p class="text-[#223843]/50">Amount</p>
+            <p class="font-medium text-[#223843]">{{ p.amount | number:'1.2-2' }} {{ p.currency }}</p>
+          </div>
+          <div>
+            <p class="text-[#223843]/50">Method</p>
+            <p class="font-medium text-[#223843]">{{ p.method }}</p>
+          </div>
+          <div>
+            <p class="text-[#223843]/50">Transaction ID</p>
+            <p class="font-medium text-[#223843] truncate">{{ p.transactionId }}</p>
+          </div>
+          <div>
+            <p class="text-[#223843]/50">Date</p>
+            <p class="font-medium text-[#223843]">{{ p.createdAt | date:'short' }}</p>
+          </div>
+        </div>
+        @if (p.failureReason) {
+          <div class="mt-2 p-3 bg-red-50 rounded-lg text-sm text-red-700">
+            {{ p.failureReason }}
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="bg-white rounded-xl border border-[#dbd3d8]/30 p-4">
+        <p class="text-sm text-[#223843]/50">Payment information not available yet.</p>
+      </div>
+    }

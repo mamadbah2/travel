@@ -1,0 +1,19 @@
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      @if (loading()) {
+        <div class="flex items-center justify-center py-20">
+          <div class="w-8 h-8 border-3 border-[#d77a61] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      } @else if (user()) {
+        <app-user-detail-card
+          [user]="user()!"
+          (ban)="onBan()"
+          (unban)="onUnban()"
+          (deleteUser)="onDelete()"
+          (updateScore)="onUpdateScore($event)"
+        />
+      } @else {
+        <div class="text-center py-20">
+          <p class="text-red-600">User not found.</p>
+        </div>
+      }
+    </div>

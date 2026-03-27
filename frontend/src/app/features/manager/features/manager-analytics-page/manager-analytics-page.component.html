@@ -1,0 +1,88 @@
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-3xl font-bold text-[#223843]">Analytics</h1>
+    <a routerLink="/manager" class="text-sm text-[#d77a61] hover:underline">Back to dashboard</a>
+  </div>
+
+  @if (loading()) {
+    <div class="flex items-center justify-center py-20">
+      <div class="w-8 h-8 border-3 border-[#d77a61] border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  } @else {
+    <!-- Performance Score -->
+    @if (performanceScore() !== null) {
+      <div class="bg-gradient-to-br from-[#223843] to-[#223843]/90 rounded-2xl p-6 text-white mb-6">
+        <p class="text-sm text-white/60 mb-1">Your Performance Score</p>
+        <div class="flex items-center gap-4">
+          <span class="text-4xl font-bold">{{ performanceScore() }}</span>
+          <span class="text-white/60">/100</span>
+          <div class="flex-1 h-3 bg-white/20 rounded-full overflow-hidden ml-4">
+            <div class="h-full rounded-full bg-[#d77a61] transition-all" [style.width.%]="performanceScore()"></div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+      <div class="bg-white rounded-xl border border-[#dbd3d8]/30 p-4">
+        <p class="text-xs text-[#223843]/50 uppercase tracking-wide">Total Travels</p>
+        <p class="text-2xl font-bold text-[#223843] mt-1">{{ totalTravels() }}</p>
+      </div>
+      <div class="bg-white rounded-xl border border-[#dbd3d8]/30 p-4">
+        <p class="text-xs text-[#223843]/50 uppercase tracking-wide">Published</p>
+        <p class="text-2xl font-bold text-emerald-600 mt-1">{{ publishedCount() }}</p>
+      </div>
+      <div class="bg-white rounded-xl border border-[#dbd3d8]/30 p-4">
+        <p class="text-xs text-[#223843]/50 uppercase tracking-wide">Drafts</p>
+        <p class="text-2xl font-bold text-amber-600 mt-1">{{ draftCount() }}</p>
+      </div>
+      <div class="bg-white rounded-xl border border-[#dbd3d8]/30 p-4">
+        <p class="text-xs text-[#223843]/50 uppercase tracking-wide">Revenue</p>
+        <p class="text-2xl font-bold text-emerald-600 mt-1">{{ totalRevenue() | number:'1.0-0' }}€</p>
+      </div>
+      <div class="bg-white rounded-xl border border-[#dbd3d8]/30 p-4">
+        <p class="text-xs text-[#223843]/50 uppercase tracking-wide">Occupancy</p>
+        <p class="text-2xl font-bold text-[#223843] mt-1">{{ occupancyRate() | number:'1.0-0' }}%</p>
+      </div>
+    </div>
+
+    <!-- Travels Breakdown -->
+    <div class="bg-white rounded-2xl border border-[#dbd3d8]/30 p-6">
+      <h2 class="text-xl font-semibold text-[#223843] mb-4">Travel Performance</h2>
+      <div class="space-y-3">
+        @for (travel of travels(); track travel.id) {
+          <a [routerLink]="['/manager', travel.id, 'manage']"
+             class="grid grid-cols-[1fr_80px_80px_90px] items-center gap-3 p-3 rounded-xl hover:bg-[#eff1f3]/50 transition-colors group">
+            <div class="min-w-0">
+              <h3 class="font-medium text-[#223843] group-hover:text-[#d77a61] transition-colors truncate">
+                {{ travel.title }}
+              </h3>
+              <p class="text-xs text-[#223843]/50 mt-0.5">
+                {{ travel.startDate | date:'mediumDate' }} — {{ travel.endDate | date:'mediumDate' }}
+              </p>
+            </div>
+            <div class="text-right text-sm">
+              <p class="font-semibold text-[#223843]">{{ travel.currentBookings }}/{{ travel.maxCapacity }}</p>
+              <p class="text-xs text-[#223843]/40">booked</p>
+            </div>
+            <div>
+              <div class="h-2 bg-[#eff1f3] rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-[#d77a61] transition-all"
+                     [style.width.%]="travel.maxCapacity > 0 ? (travel.currentBookings / travel.maxCapacity) * 100 : 0"></div>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium"
+                    [class]="travel.status === 'PUBLISHED' ? 'bg-emerald-100 text-emerald-800' : travel.status === 'DRAFT' ? 'bg-[#dbd3d8] text-[#223843]' : 'bg-red-100 text-red-800'">
+                {{ travel.status }}
+              </span>
+            </div>
+          </a>
+        } @empty {
+          <p class="text-sm text-[#223843]/50 py-4">No travels yet</p>
+        }
+      </div>
+    </div>
+  }
+</div>

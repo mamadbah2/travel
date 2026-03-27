@@ -1,0 +1,124 @@
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <h1 class="text-3xl font-bold text-[#223843] mb-8">My Profile</h1>
+
+  @if (user(); as u) {
+    <!-- Profile Card -->
+    <div class="bg-white rounded-2xl border border-[#dbd3d8]/30 p-6 mb-6">
+      <div class="flex items-start gap-4">
+        <div class="w-16 h-16 rounded-full bg-[#d8b4a0] flex items-center justify-center text-xl font-bold text-white shrink-0">
+          {{ u.firstName[0] }}{{ u.lastName[0] }}
+        </div>
+        <div class="flex-1 min-w-0">
+          @if (!editMode()) {
+            <h2 class="text-xl font-semibold text-[#223843]">{{ u.firstName }} {{ u.lastName }}</h2>
+            <p class="text-[#223843]/60 text-sm mt-1">{{ u.email }}</p>
+            @if (u.phoneNumber) {
+              <p class="text-[#223843]/60 text-sm">{{ u.phoneNumber }}</p>
+            }
+            <div class="flex flex-wrap gap-2 mt-3">
+              <span class="px-3 py-1 rounded-full text-xs font-medium bg-[#223843] text-white">{{ u.role }}</span>
+              <span class="px-3 py-1 rounded-full text-xs font-medium"
+                    [class]="u.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' : u.status === 'BANNED' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'">
+                {{ u.status }}
+              </span>
+            </div>
+            <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-[#223843]/60">
+              <div>
+                <span class="font-medium text-[#223843]/80">Member since:</span>
+                {{ u.createdAt | date:'mediumDate' }}
+              </div>
+              @if (u.lastLoginAt) {
+                <div>
+                  <span class="font-medium text-[#223843]/80">Last login:</span>
+                  {{ u.lastLoginAt | date:'medium' }}
+                </div>
+              }
+              @if (u.performanceScore !== null) {
+                <div>
+                  <span class="font-medium text-[#223843]/80">Performance:</span>
+                  {{ u.performanceScore }}/100
+                </div>
+              }
+            </div>
+            <button (click)="startEdit()"
+                    class="mt-4 px-4 py-2 text-sm font-medium text-[#d77a61] border border-[#d77a61] rounded-lg hover:bg-[#d77a61]/10 transition-colors cursor-pointer">
+              Edit Profile
+            </button>
+          } @else {
+            <!-- Edit Form -->
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-[#223843]/70 mb-1">First Name</label>
+                <input type="text" [(ngModel)]="editForm.firstName"
+                       class="w-full px-3 py-2 rounded-lg border border-[#dbd3d8] text-[#223843] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-[#223843]/70 mb-1">Last Name</label>
+                <input type="text" [(ngModel)]="editForm.lastName"
+                       class="w-full px-3 py-2 rounded-lg border border-[#dbd3d8] text-[#223843] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-[#223843]/70 mb-1">Phone Number</label>
+                <input type="tel" [(ngModel)]="editForm.phoneNumber"
+                       class="w-full px-3 py-2 rounded-lg border border-[#dbd3d8] text-[#223843] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50" />
+              </div>
+              <div class="flex gap-3">
+                <button (click)="saveProfile()" [disabled]="saving()"
+                        class="px-4 py-2 text-sm font-medium bg-[#223843] text-white rounded-lg hover:bg-[#223843]/90 transition-colors cursor-pointer disabled:opacity-50">
+                  {{ saving() ? 'Saving...' : 'Save Changes' }}
+                </button>
+                <button (click)="cancelEdit()"
+                        class="px-4 py-2 text-sm font-medium text-[#223843]/70 border border-[#dbd3d8] rounded-lg hover:bg-[#eff1f3] transition-colors cursor-pointer">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Change Password Section -->
+    <div class="bg-white rounded-2xl border border-[#dbd3d8]/30 p-6">
+      <h3 class="text-lg font-semibold text-[#223843] mb-4">Security</h3>
+      @if (!changingPassword()) {
+        <button (click)="changingPassword.set(true)"
+                class="px-4 py-2 text-sm font-medium text-[#223843] border border-[#dbd3d8] rounded-lg hover:bg-[#eff1f3] transition-colors cursor-pointer">
+          Change Password
+        </button>
+      } @else {
+        <div class="space-y-4 max-w-sm">
+          <div>
+            <label class="block text-sm font-medium text-[#223843]/70 mb-1">Current Password</label>
+            <input type="password" [(ngModel)]="passwordForm.currentPassword"
+                   class="w-full px-3 py-2 rounded-lg border border-[#dbd3d8] text-[#223843] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#223843]/70 mb-1">New Password</label>
+            <input type="password" [(ngModel)]="passwordForm.newPassword"
+                   class="w-full px-3 py-2 rounded-lg border border-[#dbd3d8] text-[#223843] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[#223843]/70 mb-1">Confirm New Password</label>
+            <input type="password" [(ngModel)]="passwordForm.confirmPassword"
+                   class="w-full px-3 py-2 rounded-lg border border-[#dbd3d8] text-[#223843] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50" />
+          </div>
+          <div class="flex gap-3">
+            <button (click)="changePassword()" [disabled]="saving()"
+                    class="px-4 py-2 text-sm font-medium bg-[#d77a61] text-white rounded-lg hover:bg-[#d77a61]/90 transition-colors cursor-pointer disabled:opacity-50">
+              {{ saving() ? 'Changing...' : 'Update Password' }}
+            </button>
+            <button (click)="changingPassword.set(false)"
+                    class="px-4 py-2 text-sm font-medium text-[#223843]/70 border border-[#dbd3d8] rounded-lg hover:bg-[#eff1f3] transition-colors cursor-pointer">
+              Cancel
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="text-center py-20">
+      <p class="text-[#223843]/50">Loading profile...</p>
+    </div>
+  }
+</div>

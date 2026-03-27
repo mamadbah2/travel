@@ -1,0 +1,63 @@
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h1 class="text-3xl font-bold text-[#223843]">My Travels</h1>
+          <p class="mt-1 text-sm text-[#223843]/60">
+            {{ store.publishedCount() }} published · {{ store.draftCount() }} drafts
+          </p>
+        </div>
+        <div class="flex gap-3">
+          <a routerLink="/manager/analytics"
+             class="px-4 py-2.5 rounded-lg border border-[#dbd3d8] text-[#223843] font-medium hover:bg-[#eff1f3] transition-colors">
+            Analytics
+          </a>
+          <a routerLink="/manager/create"
+             class="px-4 py-2.5 rounded-lg bg-[#d77a61] text-white font-medium hover:bg-[#d77a61]/90 transition-colors">
+            + New travel
+          </a>
+        </div>
+      </div>
+
+      @if (store.loading()) {
+        <div class="flex items-center justify-center py-20">
+          <div class="w-8 h-8 border-3 border-[#d77a61] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      }
+
+      @if (store.error(); as error) {
+        <div class="text-center py-20">
+          <p class="text-red-600">{{ error }}</p>
+          <button (click)="store.loadTravels(0)" class="mt-4 text-sm text-[#d77a61] hover:underline cursor-pointer">Try again</button>
+        </div>
+      }
+
+      @if (!store.loading() && !store.error()) {
+        @if (store.isEmpty()) {
+          <div class="text-center py-20">
+            <p class="text-xl text-[#223843]/50">No travels yet</p>
+            <p class="mt-2 text-sm text-[#223843]/40">Create your first travel offering!</p>
+          </div>
+        } @else {
+          <div class="space-y-4">
+            @for (travel of store.travels(); track travel.id) {
+              <app-travel-manager-card
+                [travel]="travel"
+                (publish)="onPublish(travel.id)"
+                (cancelTravel)="onCancel(travel.id)"
+                (deleteTravel)="onDelete(travel.id)"
+              />
+            }
+          </div>
+
+          @if (store.pagination().totalPages > 1) {
+            <app-pagination
+              [currentPage]="store.pagination().page"
+              [totalPages]="store.pagination().totalPages"
+              [isFirst]="store.pagination().first"
+              [isLast]="store.pagination().last"
+              (pageChange)="store.loadTravels($event)"
+            />
+          }
+        }
+      }
+    </div>

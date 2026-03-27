@@ -1,0 +1,103 @@
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      @if (store.loading()) {
+        <div class="flex items-center justify-center py-20">
+          <div class="w-8 h-8 border-3 border-[#d77a61] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      }
+
+      @if (store.error(); as error) {
+        <div class="text-center py-20">
+          <p class="text-red-600">{{ error }}</p>
+        </div>
+      }
+
+      @if (store.selectedSubscription(); as sub) {
+        <app-subscription-info [subscription]="sub" />
+
+        <!-- Cancel section for active subscriptions -->
+        @if (sub.status !== 'CANCELLED' && cancellationInfo()) {
+          <app-cancel-button
+            [canCancel]="cancellationInfo()!.allowed"
+            [daysLeft]="cancellationInfo()!.daysLeft"
+            [cancelling]="cancelling()"
+            (confirmCancel)="onCancel()"
+          />
+        }
+
+        <!-- Payment action for PENDING_PAYMENT -->
+        @if (sub.status === 'PENDING_PAYMENT') {
+          <div class="bg-white rounded-xl border border-[#dbd3d8]/30 p-5">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+              </div>
+              <div>
+                <h4 class="font-semibold text-[#223843]">Payment Required</h4>
+                <p class="text-sm text-[#223843]/50">Choose a payment method and complete your payment</p>
+              </div>
+            </div>
+            @if (travelPrice() > 0) {
+              <p class="text-2xl font-bold text-[#223843] mb-5">{{ travelPrice() }} <span class="text-base font-normal text-[#223843]/50">EUR</span></p>
+            }
+
+            <!-- Payment method selection -->
+            <p class="text-sm font-medium text-[#223843]/70 mb-3">Select payment method</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+              @for (method of paymentMethods; track method.value) {
+                <button (click)="selectMethod(method.value)"
+                        class="flex items-center gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer"
+                        [class]="selectedMethod() === method.value
+                          ? 'border-[#d77a61] bg-[#d77a61]/5'
+                          : 'border-[#dbd3d8]/50 hover:border-[#dbd3d8] bg-white'">
+                  <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                       [class]="selectedMethod() === method.value ? 'bg-[#d77a61]/10' : 'bg-[#eff1f3]'">
+                    <svg class="w-4.5 h-4.5" [class]="selectedMethod() === method.value ? 'text-[#d77a61]' : 'text-[#223843]/50'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" [attr.d]="method.icon"/>
+                    </svg>
+                  </div>
+                  <span class="text-sm font-medium" [class]="selectedMethod() === method.value ? 'text-[#d77a61]' : 'text-[#223843]'">
+                    {{ method.label }}
+                  </span>
+                  @if (selectedMethod() === method.value) {
+                    <svg class="w-4 h-4 text-[#d77a61] ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  }
+                </button>
+              }
+            </div>
+
+            <button (click)="simulatePayment()" [disabled]="paying() || !selectedMethod()"
+                    class="px-6 py-3 rounded-lg bg-[#d77a61] text-white font-medium hover:bg-[#d77a61]/90 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+              @if (paying()) {
+                <span class="flex items-center gap-2">
+                  <span class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  Processing via {{ selectedMethod() }}...
+                </span>
+              } @else if (selectedMethod()) {
+                Pay {{ travelPrice() }} EUR via {{ selectedMethod() }}
+              } @else {
+                Select a payment method
+              }
+            </button>
+            <p class="text-xs text-[#223843]/40 mt-3">Payment is simulated for demo purposes</p>
+          </div>
+        }
+
+        <!-- Payment status -->
+        <app-payment-status [payment]="payment()" [loading]="paymentLoading()" />
+
+        <!-- Notifications -->
+        @if (notifications().length > 0) {
+          <app-notification-list [notifications]="notifications()" />
+        }
+
+        <!-- Refresh button -->
+        <div class="text-center">
+          <button
+            (click)="refreshData()"
+            class="text-sm text-[#d77a61] hover:underline cursor-pointer"
+          >
+            Refresh status
+          </button>
+        </div>
+      }
+    </div>

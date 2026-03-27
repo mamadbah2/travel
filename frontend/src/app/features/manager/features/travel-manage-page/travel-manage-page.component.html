@@ -1,0 +1,45 @@
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      @if (loading()) {
+        <div class="flex items-center justify-center py-20">
+          <div class="w-8 h-8 border-3 border-[#d77a61] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      } @else if (travel(); as t) {
+        <!-- Header -->
+        <div class="bg-white rounded-2xl border border-[#dbd3d8]/30 p-6">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h1 class="text-2xl font-bold text-[#223843]">{{ t.title }}</h1>
+              <p class="text-sm text-[#223843]/50 mt-1">
+                {{ t.currentBookings }}/{{ t.maxCapacity }} booked · {{ t.price | number:'1.0-0' }} €
+              </p>
+            </div>
+            <app-status-badge [status]="t.status" />
+          </div>
+          <div class="flex items-center gap-2 mt-4">
+            <a [routerLink]="['/manager', t.id, 'edit']"
+               class="px-3 py-1.5 text-sm font-medium text-[#223843] hover:bg-[#223843]/5 rounded-lg transition-colors">
+              Edit
+            </a>
+            <a [routerLink]="['/travels', t.id]"
+               class="px-3 py-1.5 text-sm font-medium text-[#d77a61] hover:bg-[#d77a61]/10 rounded-lg transition-colors">
+              View public page
+            </a>
+          </div>
+        </div>
+
+        <!-- Subscribers -->
+        <app-subscriber-list
+          [subscribers]="subscribers()"
+          (remove)="onRemoveSubscriber($event)"
+        />
+
+        <!-- Notifications -->
+        @if (notifications().length > 0) {
+          <app-notification-list [notifications]="notifications()" />
+        }
+      } @else {
+        <div class="text-center py-20">
+          <p class="text-red-600">Travel not found.</p>
+        </div>
+      }
+    </div>

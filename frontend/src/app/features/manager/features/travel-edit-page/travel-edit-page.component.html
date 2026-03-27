@@ -1,0 +1,22 @@
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h1 class="text-3xl font-bold text-[#223843] mb-8">Edit travel</h1>
+
+      @if (loadingTravel()) {
+        <div class="flex items-center justify-center py-20">
+          <div class="w-8 h-8 border-3 border-[#d77a61] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      } @else if (travel()) {
+        <div class="bg-white rounded-2xl border border-[#dbd3d8]/30 p-6">
+          <app-travel-form
+            [loading]="saving()"
+            [initialData]="travel()"
+            submitLabel="Save changes"
+            (submitTravel)="onSave($event)"
+          />
+        </div>
+      } @else {
+        <div class="text-center py-20">
+          <p class="text-red-600">Travel not found.</p>
+        </div>
+      }
+    </div>

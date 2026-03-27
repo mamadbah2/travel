@@ -1,0 +1,99 @@
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      @if (store.loading()) {
+        <div class="flex items-center justify-center py-20">
+          <div class="w-8 h-8 border-3 border-[#d77a61] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      }
+
+      @if (store.error(); as error) {
+        <div class="text-center py-20">
+          <p class="text-red-600">{{ error }}</p>
+        </div>
+      }
+
+      @if (store.selectedTravel(); as travel) {
+        <app-travel-info [travel]="travel" />
+
+        <!-- Subscribe action -->
+        <div class="mt-8 p-6 bg-white rounded-2xl border border-[#dbd3d8]/30">
+          @if (!authService.isAuthenticated()) {
+            <p class="text-[#223843]/60 text-sm mb-3">Sign in to subscribe to this travel.</p>
+            <a href="/auth/login"
+               class="inline-block px-6 py-3 rounded-lg bg-[#223843] text-white font-medium hover:bg-[#223843]/90 transition-colors">
+              Sign in
+            </a>
+          } @else if (canSubscribe()) {
+            <button
+              (click)="onSubscribe()"
+              [disabled]="subscribing()"
+              class="px-6 py-3 rounded-lg bg-[#d77a61] text-white font-medium hover:bg-[#d77a61]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {{ subscribing() ? 'Subscribing...' : 'Subscribe — ' + travel.price + ' €' }}
+            </button>
+            <p class="text-xs text-[#223843]/50 mt-2">You can cancel up to 3 days before departure.</p>
+          } @else if (!isTraveler()) {
+            <p class="text-[#223843]/50 text-sm">Only travelers can subscribe to travels.</p>
+          } @else if (travel.availableSpots === 0) {
+            <p class="text-[#d77a61] font-medium">This travel is fully booked.</p>
+          } @else if (travel.status !== 'PUBLISHED') {
+            <p class="text-[#223843]/50 text-sm">This travel is not available for booking.</p>
+          }
+        </div>
+
+        <!-- Rate Manager Section -->
+        @if (isTraveler() && manager(); as mgr) {
+          <div class="mt-8 p-6 bg-white rounded-2xl border border-[#dbd3d8]/30">
+            <h2 class="text-xl font-semibold text-[#223843] mb-4">Rate the Manager</h2>
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-full bg-[#d8b4a0] flex items-center justify-center text-sm font-bold text-white shrink-0">
+                {{ mgr.firstName[0] }}{{ mgr.lastName[0] }}
+              </div>
+              <div>
+                <p class="font-medium text-[#223843]">{{ mgr.firstName }} {{ mgr.lastName }}</p>
+                <p class="text-xs text-[#223843]/50">How would you rate this manager's organization?</p>
+              </div>
+            </div>
+            @if (!ratingSubmitted()) {
+              <div class="space-y-3">
+                <div class="flex items-center gap-4">
+                  <input type="range" min="0" max="100" step="5"
+                         [ngModel]="managerRating()"
+                         (ngModelChange)="managerRating.set($event)"
+                         class="flex-1 h-2 bg-[#eff1f3] rounded-full appearance-none cursor-pointer accent-[#d77a61]" />
+                  <span class="text-lg font-bold text-[#223843] w-12 text-right">{{ managerRating() }}</span>
+                </div>
+                <div class="flex justify-between text-xs text-[#223843]/40">
+                  <span>Poor</span>
+                  <span>Average</span>
+                  <span>Excellent</span>
+                </div>
+                <button (click)="submitManagerRating()" [disabled]="ratingSubmitting()"
+                        class="px-4 py-2 text-sm font-medium bg-[#223843] text-white rounded-lg hover:bg-[#223843]/90 transition-colors cursor-pointer disabled:opacity-50">
+                  {{ ratingSubmitting() ? 'Submitting...' : 'Submit Rating' }}
+                </button>
+              </div>
+            } @else {
+              <div class="flex items-center gap-2 text-sm text-emerald-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Rating submitted — thank you!
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Reviews Section -->
+        <div class="mt-8 p-6 bg-white rounded-2xl border border-[#dbd3d8]/30">
+          <h2 class="text-xl font-semibold text-[#223843] mb-4">Reviews</h2>
+          <app-review-list [reviews]="reviews()" [averageRating]="averageRating()" />
+          @if (isTraveler()) {
+            <div class="mt-4 pt-4 border-t border-[#dbd3d8]/20">
+              <app-review-form
+                [travelId]="travelId()"
+                [submitting]="reviewSubmitting()"
+                (submitted)="onReviewSubmit($event)"
+              />
+            </div>
+          }
+        </div>
+      }
+    </div>

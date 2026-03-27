@@ -1,0 +1,35 @@
+    <a [routerLink]="['/travels', travel().id]"
+       class="block bg-white rounded-2xl shadow-sm border border-[#dbd3d8]/30 overflow-hidden hover:shadow-md transition-shadow group">
+      <!-- Image placeholder -->
+      <div class="h-48 bg-gradient-to-br from-[#d8b4a0]/40 to-[#d77a61]/30 flex items-center justify-center relative">
+        <span class="text-4xl">✈️</span>
+        <div class="absolute top-3 right-3">
+          <app-status-badge [status]="travel().status" />
+        </div>
+      </div>
+
+      <div class="p-4">
+        <h3 class="font-semibold text-[#223843] text-lg group-hover:text-[#d77a61] transition-colors line-clamp-1">
+          {{ travel().title }}
+        </h3>
+
+        @if (travel().destinations.length > 0) {
+          <p class="text-sm text-[#223843]/60 mt-1 line-clamp-1">
+            {{ destinationNames() }}
+          </p>
+        }
+
+        <p class="text-xs text-[#223843]/50 mt-2">
+          {{ dates() }}
+        </p>
+
+        <div class="flex items-center justify-between mt-3 pt-3 border-t border-[#dbd3d8]/30">
+          <span class="text-xl font-bold text-[#d77a61]">
+            {{ travel().price | number:'1.0-0' }} €
+          </span>
+          <span class="text-xs text-[#223843]/50">
+            {{ travel().availableSpots }} spots left
+          </span>
+        </div>
+      </div>
+    </a>

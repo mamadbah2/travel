@@ -1,0 +1,40 @@
+@if (!expanded()) {
+  <button (click)="expanded.set(true)"
+          class="text-sm font-medium text-[#d77a61] hover:underline cursor-pointer">
+    Write a review
+  </button>
+} @else {
+  <div class="bg-[#eff1f3]/50 rounded-xl p-4 space-y-3">
+    <h4 class="text-sm font-medium text-[#223843]">Your Review</h4>
+
+    <!-- Star picker -->
+    <div class="flex gap-1">
+      @for (star of stars; track star) {
+        <button (click)="setRating(star)"
+                class="text-2xl cursor-pointer transition-colors"
+                [class]="star <= rating() ? 'text-amber-400' : 'text-[#dbd3d8]'">
+          &#9733;
+        </button>
+      }
+    </div>
+
+    <textarea
+      [ngModel]="comment()"
+      (ngModelChange)="comment.set($event)"
+      placeholder="Share your experience..."
+      rows="3"
+      class="w-full px-3 py-2 rounded-lg border border-[#dbd3d8] text-sm text-[#223843] placeholder-[#dbd3d8] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 resize-none"
+    ></textarea>
+
+    <div class="flex gap-2">
+      <button (click)="submit()" [disabled]="submitting() || !comment().trim()"
+              class="px-4 py-2 text-sm font-medium bg-[#223843] text-white rounded-lg hover:bg-[#223843]/90 transition-colors cursor-pointer disabled:opacity-50">
+        {{ submitting() ? 'Submitting...' : 'Submit Review' }}
+      </button>
+      <button (click)="expanded.set(false)"
+              class="px-4 py-2 text-sm font-medium text-[#223843]/70 hover:bg-white rounded-lg transition-colors cursor-pointer">
+        Cancel
+      </button>
+    </div>
+  </div>
+}

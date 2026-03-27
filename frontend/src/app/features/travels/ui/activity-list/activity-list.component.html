@@ -1,0 +1,19 @@
+    <div class="space-y-3">
+      <h3 class="text-lg font-semibold text-[#223843]">Activities</h3>
+      @for (activity of activities(); track activity.id) {
+        <div class="flex items-start gap-3 p-3 rounded-lg bg-[#eff1f3]">
+          <span class="text-[#d77a61] mt-0.5">🎯</span>
+          <div>
+            <p class="font-medium text-[#223843]">{{ activity.name }}</p>
+            @if (activity.location) {
+              <p class="text-sm text-[#223843]/60">{{ activity.location }}</p>
+            }
+            @if (activity.description) {
+              <p class="text-sm text-[#223843]/50 mt-1">{{ activity.description }}</p>
+            }
+          </div>
+        </div>
+      } @empty {
+        <p class="text-sm text-[#223843]/50">No activities listed.</p>
+      }
+    </div>

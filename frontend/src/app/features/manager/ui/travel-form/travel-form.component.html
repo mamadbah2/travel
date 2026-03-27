@@ -1,0 +1,149 @@
+    <form (ngSubmit)="onSubmit()" class="space-y-6">
+      <!-- Basic info -->
+      <div class="space-y-4">
+        <h3 class="text-lg font-semibold text-[#223843]">Basic Information</h3>
+
+        <div>
+          <label for="title" class="block text-sm font-medium text-[#223843] mb-1">Title</label>
+          <input id="title" type="text" [(ngModel)]="title" name="title" required maxlength="255"
+            class="w-full px-4 py-3 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 focus:border-[#d77a61] transition-colors"
+            placeholder="Amazing trip to..." />
+        </div>
+
+        <div>
+          <label for="description" class="block text-sm font-medium text-[#223843] mb-1">Description</label>
+          <textarea id="description" [(ngModel)]="description" name="description" rows="4" maxlength="5000"
+            class="w-full px-4 py-3 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 focus:border-[#d77a61] transition-colors resize-y"
+            placeholder="Describe the travel experience..."></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="startDate" class="block text-sm font-medium text-[#223843] mb-1">Start date</label>
+            <input id="startDate" type="date" [(ngModel)]="startDate" name="startDate" required
+              class="w-full px-4 py-3 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 focus:border-[#d77a61] transition-colors" />
+          </div>
+          <div>
+            <label for="endDate" class="block text-sm font-medium text-[#223843] mb-1">End date</label>
+            <input id="endDate" type="date" [(ngModel)]="endDate" name="endDate" required
+              class="w-full px-4 py-3 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 focus:border-[#d77a61] transition-colors" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="price" class="block text-sm font-medium text-[#223843] mb-1">Price (€)</label>
+            <input id="price" type="number" [(ngModel)]="price" name="price" required min="0" step="0.01"
+              class="w-full px-4 py-3 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 focus:border-[#d77a61] transition-colors" />
+          </div>
+          <div>
+            <label for="maxCapacity" class="block text-sm font-medium text-[#223843] mb-1">Max capacity</label>
+            <input id="maxCapacity" type="number" [(ngModel)]="maxCapacity" name="maxCapacity" required min="1"
+              class="w-full px-4 py-3 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 focus:border-[#d77a61] transition-colors" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Accommodation & Transportation -->
+      <div class="space-y-4">
+        <h3 class="text-lg font-semibold text-[#223843]">Logistics</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="accommodationType" class="block text-sm font-medium text-[#223843] mb-1">Accommodation type</label>
+            <select id="accommodationType" [(ngModel)]="accommodationType" name="accommodationType"
+              class="w-full px-4 py-3 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 focus:border-[#d77a61] transition-colors">
+              <option [ngValue]="null">None</option>
+              @for (type of accommodationTypes; track type) {
+                <option [value]="type">{{ type }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label for="accommodationName" class="block text-sm font-medium text-[#223843] mb-1">Accommodation name</label>
+            <input id="accommodationName" type="text" [(ngModel)]="accommodationName" name="accommodationName" maxlength="255"
+              class="w-full px-4 py-3 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 focus:border-[#d77a61] transition-colors"
+              placeholder="Hotel name..." />
+          </div>
+          <div>
+            <label for="transportationType" class="block text-sm font-medium text-[#223843] mb-1">Transportation type</label>
+            <select id="transportationType" [(ngModel)]="transportationType" name="transportationType"
+              class="w-full px-4 py-3 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 focus:border-[#d77a61] transition-colors">
+              <option [ngValue]="null">None</option>
+              @for (type of transportationTypes; track type) {
+                <option [value]="type">{{ type }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label for="transportationDetails" class="block text-sm font-medium text-[#223843] mb-1">Transportation details</label>
+            <input id="transportationDetails" type="text" [(ngModel)]="transportationDetails" name="transportationDetails" maxlength="500"
+              class="w-full px-4 py-3 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 focus:border-[#d77a61] transition-colors"
+              placeholder="Flight details..." />
+          </div>
+        </div>
+      </div>
+
+      <!-- Destinations -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-[#223843]">Destinations</h3>
+          <button type="button" (click)="addDestination()"
+            class="text-sm font-medium text-[#d77a61] hover:text-[#d77a61]/80 cursor-pointer">
+            + Add destination
+          </button>
+        </div>
+        @for (dest of destinations; track $index) {
+          <div class="p-4 bg-[#eff1f3] rounded-xl space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-medium text-[#223843]/60">Destination {{ $index + 1 }}</span>
+              <button type="button" (click)="removeDestination($index)"
+                class="text-sm text-red-500 hover:text-red-700 cursor-pointer">Remove</button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <input type="text" [(ngModel)]="dest.name" [name]="'destName' + $index" required maxlength="255" placeholder="Name"
+                class="px-3 py-2 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] text-sm focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50" />
+              <input type="text" [(ngModel)]="dest.country" [name]="'destCountry' + $index" required maxlength="100" placeholder="Country"
+                class="px-3 py-2 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] text-sm focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50" />
+              <input type="text" [(ngModel)]="dest.city" [name]="'destCity' + $index" maxlength="100" placeholder="City (optional)"
+                class="px-3 py-2 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] text-sm focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50" />
+            </div>
+            <textarea [(ngModel)]="dest.description" [name]="'destDesc' + $index" rows="2" maxlength="5000" placeholder="Description (optional)"
+              class="w-full px-3 py-2 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] text-sm focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 resize-y"></textarea>
+          </div>
+        }
+      </div>
+
+      <!-- Activities -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-[#223843]">Activities</h3>
+          <button type="button" (click)="addActivity()"
+            class="text-sm font-medium text-[#d77a61] hover:text-[#d77a61]/80 cursor-pointer">
+            + Add activity
+          </button>
+        </div>
+        @for (act of activities; track $index) {
+          <div class="p-4 bg-[#eff1f3] rounded-xl space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-medium text-[#223843]/60">Activity {{ $index + 1 }}</span>
+              <button type="button" (click)="removeActivity($index)"
+                class="text-sm text-red-500 hover:text-red-700 cursor-pointer">Remove</button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <input type="text" [(ngModel)]="act.name" [name]="'actName' + $index" required maxlength="255" placeholder="Activity name"
+                class="px-3 py-2 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] text-sm focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50" />
+              <input type="text" [(ngModel)]="act.location" [name]="'actLocation' + $index" maxlength="255" placeholder="Location (optional)"
+                class="px-3 py-2 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] text-sm focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50" />
+            </div>
+            <textarea [(ngModel)]="act.description" [name]="'actDesc' + $index" rows="2" maxlength="5000" placeholder="Description (optional)"
+              class="w-full px-3 py-2 rounded-lg border border-[#dbd3d8] bg-white text-[#223843] text-sm focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 resize-y"></textarea>
+          </div>
+        }
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" [disabled]="loading()"
+        class="w-full py-3 rounded-lg bg-[#223843] text-white font-medium hover:bg-[#223843]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+        {{ loading() ? 'Saving...' : submitLabel() }}
+      </button>
+    </form>

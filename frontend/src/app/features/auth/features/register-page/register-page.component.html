@@ -1,0 +1,20 @@
+    <div class="min-h-screen flex items-center justify-center bg-[#eff1f3] px-4 py-12">
+      <div class="w-full max-w-md">
+        <div class="text-center mb-8">
+          <a routerLink="/" class="text-2xl font-bold text-[#223843]">
+            <span class="text-[#d77a61]">✦</span> TravelApp
+          </a>
+          <h1 class="mt-6 text-3xl font-bold text-[#223843]">Create your account</h1>
+          <p class="mt-2 text-sm text-[#223843]/60">Start your travel adventure</p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-[#dbd3d8]/30 p-8">
+          <app-register-form [loading]="loading()" (submitRegister)="onRegister($event)" />
+        </div>
+
+        <p class="mt-6 text-center text-sm text-[#223843]/60">
+          Already have an account?
+          <a routerLink="/auth/login" class="font-medium text-[#d77a61] hover:text-[#d77a61]/80">Sign in</a>
+        </p>
+      </div>
+    </div>

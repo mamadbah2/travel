@@ -1,0 +1,63 @@
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Header -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-[#223843]">Explore travels</h1>
+        <p class="mt-2 text-[#223843]/60">Discover your next adventure</p>
+      </div>
+
+      <!-- Search bar -->
+      <div class="mb-8">
+        <input
+          type="text"
+          [ngModel]="searchInput()"
+          (ngModelChange)="onSearchChange($event)"
+          placeholder="Search travels by name, destination..."
+          class="w-full max-w-lg px-4 py-3 rounded-xl border border-[#dbd3d8] bg-white text-[#223843] placeholder-[#dbd3d8] focus:outline-none focus:ring-2 focus:ring-[#d77a61]/50 focus:border-[#d77a61] transition-colors"
+        />
+      </div>
+
+      <!-- Loading -->
+      @if (store.loading()) {
+        <div class="flex items-center justify-center py-20">
+          <div class="w-8 h-8 border-3 border-[#d77a61] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      }
+
+      <!-- Error -->
+      @if (store.error(); as error) {
+        <div class="text-center py-20">
+          <p class="text-red-600">{{ error }}</p>
+          <button (click)="store.loadTravels({})" class="mt-4 px-4 py-2 text-sm text-[#d77a61] hover:underline cursor-pointer">
+            Try again
+          </button>
+        </div>
+      }
+
+      <!-- Results grid -->
+      @if (!store.loading() && !store.error()) {
+        @if (store.isEmpty()) {
+          <div class="text-center py-20">
+            <p class="text-xl text-[#223843]/50">No travels found</p>
+            @if (store.searchQuery()) {
+              <p class="mt-2 text-sm text-[#223843]/40">Try a different search term</p>
+            }
+          </div>
+        } @else {
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            @for (travel of store.travels(); track travel.id) {
+              <app-travel-card [travel]="travel" />
+            }
+          </div>
+
+          @if (store.pagination().totalPages > 1) {
+            <app-pagination
+              [currentPage]="store.pagination().page"
+              [totalPages]="store.pagination().totalPages"
+              [isFirst]="store.pagination().first"
+              [isLast]="store.pagination().last"
+              (pageChange)="onPageChange($event)"
+            />
+          }
+        }
+      }
+    </div>
