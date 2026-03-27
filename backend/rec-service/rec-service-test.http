@@ -1,0 +1,323 @@
+### =============================================================
+### REC SERVICE - HTTP Test File
+### Travel Platform - Recommendations, Feedbacks & Reports API
+### =============================================================
+### NOTE: Le rec-service utilise Neo4j pour les recommandations.
+### Les données du graphe sont synchronisées automatiquement via
+### RabbitMQ quand un manager publie un voyage ou qu'un traveler
+### souscrit depuis le travel-service.
+###
+### Flux de test complet :
+### 1. Se connecter (auth-service) → tokens Admin, Manager, Traveler
+### 2. Créer et publier des voyages (travel-service) → sync graphe Neo4j
+### 3. Souscrire à un voyage (travel-service) → sync graphe Neo4j
+### 4. Tester les recommandations (rec-service)
+### 5. Tester les feedbacks (rec-service)
+### 6. Tester les signalements (rec-service)
+### 7. Scénarios d'erreur
+### =============================================================
+
+### Base URLs
+@authBaseUrl = http://localhost:8081/api/v1
+@travelBaseUrl = http://localhost:8082/api/v1
+@recBaseUrl = http://localhost:8086/api/v1
+
+### =============================================================
+### STEP 1: AUTHENTICATE (get tokens from auth-service)
+### =============================================================
+
+### ----- Login as Admin -----
+# @name loginAdmin
+POST {{authBaseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "newadmin@travel.sn",
+    "password": "Admin@123456"
+}
+
+### ----- Login as Manager -----
+# @name loginManager
+POST {{authBaseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "manager@example.com",
+    "password": "Manager@123"
+}
+
+### ----- Login as Traveler -----
+# @name loginTraveler
+POST {{authBaseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "traveler@example.com",
+    "password": "Traveler@123"
+}
+
+### Variables (populated from login responses)
+@adminToken = {{loginAdmin.response.body.accessToken}}
+@managerToken = {{loginManager.response.body.accessToken}}
+@travelerToken = {{loginTraveler.response.body.accessToken}}
+
+### =============================================================
+### STEP 2: CREATE & PUBLISH TRAVELS (triggers graph sync!)
+### =============================================================
+### Quand un voyage est publié, le travel-service envoie un
+### TravelCreatedEvent via RabbitMQ → le rec-service synchronise
+### le graphe Neo4j automatiquement.
+### =============================================================
+
+### ----- Create Travel 1: Saint-Louis -----
+# @name createTravel1
+POST {{travelBaseUrl}}/travels
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "title": "Escapade à Saint-Louis",
+    "description": "Découvrez la magnifique ville de Saint-Louis du Sénégal, avec ses plages dorées, son architecture coloniale et sa culture vibrante. Balade en pirogue sur le fleuve Sénégal.",
+    "startDate": "2026-04-15",
+    "endDate": "2026-04-22",
+    "price": 450000,
+    "maxCapacity": 20,
+    "accommodationType": "HOTEL",
+    "accommodationName": "Hôtel de la Poste",
+    "transportationType": "BUS",
+    "transportationDetails": "Bus climatisé Dakar → Saint-Louis (aller-retour)",
+    "destinations": [
+        {
+            "name": "Saint-Louis",
+            "country": "Sénégal",
+            "city": "Saint-Louis",
+            "description": "Ancienne capitale du Sénégal, patrimoine UNESCO",
+            "displayOrder": 1
+        },
+        {
+            "name": "Langue de Barbarie",
+            "country": "Sénégal",
+            "city": "Saint-Louis",
+            "description": "Parc national et plage sauvage",
+            "displayOrder": 2
+        }
+    ],
+    "activities": [
+        {
+            "name": "Balade en pirogue",
+            "description": "Tour en pirogue sur le fleuve Sénégal",
+            "location": "Fleuve Sénégal",
+            "displayOrder": 1
+        },
+        {
+            "name": "Visite du quartier des pêcheurs",
+            "description": "Découverte de Guet Ndar, le quartier des pêcheurs",
+            "location": "Guet Ndar, Saint-Louis",
+            "displayOrder": 2
+        }
+    ]
+}
+
+### Travel 1 ID
+@travelId1 = {{createTravel1.response.body.id}}
+
+### ----- Create Travel 2: Casamance -----
+# @name createTravel2
+POST {{travelBaseUrl}}/travels
+Authorization: Bearer {{managerToken}}
+Content-Type: application/json
+
+{
+    "title": "Aventure en Casamance",
+    "description": "Explorez la Casamance, région verdoyante du sud du Sénégal. Forêts tropicales, plages paradisiaques et rencontre avec la culture Diola.",
+    "startDate": "2026-05-10",
+    "endDate": "2026-05-18",
+    "price": 650000.0,
+    "maxCapacity": 15,
+    "accommodationType": "GUESTHOUSE",
+    "accommodationName": "Le Fromager",
+    "transportationType": "FLIGHT",
+    "transportationDetails": "Vol Air Sénégal Dakar → Ziguinchor",
+    "destinations": [
+        {
+            "name": "Cap Skirring",
+            "country": "Sénégal",
+            "city": "Ziguinchor",
+            "description": "Station balnéaire avec plages de sable fin",
+            "displayOrder": 1
+        },
+        {
+            "name": "Île de Karabane",
+            "country": "Sénégal",
+            "city": "Casamance",
+            "description": "Île tropicale accessible uniquement par pirogue",
+            "displayOrder": 2
+        }
+    ],
+    "activities": [
+        {
+            "name": "Randonnée en forêt",
+            "description": "Trek dans la forêt tropicale de Casamance",
+            "location": "Forêt de Casamance",
+            "displayOrder": 1
+        },
+        {
+            "name": "Observation des oiseaux",
+            "description": "Birdwatching dans le parc de la Basse Casamance",
+            "location": "Parc de la Basse Casamance",
+            "displayOrder": 2
+        }
+    ]
+}
+
+### Travel 2 ID
+@travelId2 = {{createTravel2.response.body.id}}
+
+### ----- Publish Travel 1 (triggers TravelCreatedEvent → graph sync!) -----
+# @name publishTravel1
+POST {{travelBaseUrl}}/travels/{{travelId1}}/publish
+Authorization: Bearer {{managerToken}}
+
+### ----- Publish Travel 2 (triggers TravelCreatedEvent → graph sync!) -----
+# @name publishTravel2
+POST {{travelBaseUrl}}/travels/{{travelId2}}/publish
+Authorization: Bearer {{managerToken}}
+
+### =============================================================
+### STEP 3: SUBSCRIBE TO A TRAVEL (triggers SubscriptionCreatedEvent)
+### =============================================================
+### La souscription enrichit le graphe Neo4j avec la relation
+### TRAVELER → SUBSCRIBED_TO → TRAVEL, permettant les
+### recommandations personnalisées.
+### =============================================================
+
+### ----- Traveler subscribes to Travel 1 -----
+# @name subscribeTraveler
+POST {{travelBaseUrl}}/subscriptions/travel/{{travelId1}}
+Authorization: Bearer {{travelerToken}}
+
+### =============================================================
+### STEP 4: RECOMMENDATIONS
+### =============================================================
+
+### ----- Popular travels (public, no auth required) -----
+GET {{recBaseUrl}}/recommendations/popular?limit=10
+
+### ----- Similar travels to Travel 1 (public) -----
+GET {{recBaseUrl}}/recommendations/similar/{{travelId1}}?limit=5
+
+### ----- Similar travels to Travel 2 (public) -----
+GET {{recBaseUrl}}/recommendations/similar/{{travelId2}}?limit=5
+
+### ----- Personalized recommendations (authenticated traveler) -----
+GET {{recBaseUrl}}/recommendations/personalized?limit=10
+Authorization: Bearer {{travelerToken}}
+
+### =============================================================
+### STEP 5: FEEDBACKS
+### =============================================================
+
+### ----- Create a feedback on Travel 1 (Traveler) -----
+# @name createFeedback
+POST {{recBaseUrl}}/feedbacks
+Content-Type: application/json
+Authorization: Bearer {{travelerToken}}
+
+{
+    "travelId": "{{travelId1}}",
+    "rating": 5,
+    "comment": "Excellent voyage à Saint-Louis, je recommande vivement ! La balade en pirogue était inoubliable."
+}
+
+### Feedback ID
+@feedbackId = {{createFeedback.response.body.id}}
+
+### ----- List feedbacks for Travel 1 (public) -----
+GET {{recBaseUrl}}/feedbacks/travel/{{travelId1}}?page=0&size=20
+
+### ----- My feedbacks (authenticated traveler) -----
+GET {{recBaseUrl}}/feedbacks/me?page=0&size=20
+Authorization: Bearer {{travelerToken}}
+
+### ----- Update feedback (Traveler, owner only) -----
+PUT {{recBaseUrl}}/feedbacks/{{feedbackId}}
+Content-Type: application/json
+Authorization: Bearer {{travelerToken}}
+
+{
+    "rating": 4,
+    "comment": "Très bon voyage, quelques améliorations possibles sur le transport."
+}
+
+### ----- Delete feedback (Traveler or Admin) -----
+DELETE {{recBaseUrl}}/feedbacks/{{feedbackId}}
+Authorization: Bearer {{travelerToken}}
+
+### =============================================================
+### STEP 6: REPORTS (Signalements)
+### =============================================================
+
+### ----- Create a report (authenticated user) -----
+# @name createReport
+POST {{recBaseUrl}}/reports
+Content-Type: application/json
+Authorization: Bearer {{travelerToken}}
+
+{
+    "reportedUserId": "00000000-0000-0000-0000-000000000001",
+    "reason": "Comportement inapproprié durant le voyage"
+}
+
+### Report ID
+@reportId = {{createReport.response.body.id}}
+
+### ----- List all reports (Admin only) -----
+GET {{recBaseUrl}}/reports?page=0&size=20
+Authorization: Bearer {{adminToken}}
+
+### ----- Get report details (Admin only) -----
+GET {{recBaseUrl}}/reports/{{reportId}}
+Authorization: Bearer {{adminToken}}
+
+### ----- Resolve a report (Admin only) -----
+PUT {{recBaseUrl}}/reports/{{reportId}}/resolve
+Authorization: Bearer {{adminToken}}
+
+### =============================================================
+### STEP 7: ERROR SCENARIOS
+### =============================================================
+
+### ----- Duplicate feedback (should fail — one feedback per traveler per travel) -----
+POST {{recBaseUrl}}/feedbacks
+Content-Type: application/json
+Authorization: Bearer {{travelerToken}}
+
+{
+    "travelId": "{{travelId1}}",
+    "rating": 3,
+    "comment": "Deuxième feedback sur le même voyage — doit échouer"
+}
+
+### ----- Get non-existent feedback (should fail 404) -----
+GET {{recBaseUrl}}/feedbacks/travel/00000000-0000-0000-0000-000000000000?page=0&size=20
+
+### ----- Update feedback without auth (should fail 401) -----
+PUT {{recBaseUrl}}/feedbacks/{{feedbackId}}
+Content-Type: application/json
+
+{
+    "rating": 1,
+    "comment": "Sans token — accès refusé"
+}
+
+### ----- Personalized recommendations without auth (should fail 401) -----
+GET {{recBaseUrl}}/recommendations/personalized?limit=10
+
+### ----- List reports as Traveler (should fail 403 — Admin only) -----
+GET {{recBaseUrl}}/reports?page=0&size=20
+Authorization: Bearer {{travelerToken}}
+
+### =============================================================
+### SWAGGER UI
+### =============================================================
+### Open http://localhost:8086/swagger-ui.html in your browser
