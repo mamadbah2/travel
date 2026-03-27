@@ -13,3 +13,45 @@ pour inspecter les connexions réseau. Elle remplace l'ancienne commande netstat
 Voici le détail de chaque option (flag) utilisée :
 
 ELASTIC_PASSWORD:lbB07FlWk4MDeGYx
+
+Everything works as expected:
+  - docker compose up -d → 7 infra services only (rétrocompatible)
+  - docker compose --profile app up -d → infra + 7 microservices
+
+  Here's a summary of all 18 files:
+
+  Created (16 files):
+
+  ┌─────────────────────────┬────────────────────────────────────────────────────────────────────────────┐
+  │          File           │                                  Purpose                                   │
+  ├─────────────────────────┼────────────────────────────────────────────────────────────────────────────┤
+  │ Dockerfile              │ Multi-stage build (JDK 21 builder → JRE 21 runtime) shared by all services │
+  ├─────────────────────────┼────────────────────────────────────────────────────────────────────────────┤
+  │ Makefile                │ Convenience commands (make up, make down, make up-build, etc.)             │
+  ├─────────────────────────┼────────────────────────────────────────────────────────────────────────────┤
+  │ 7x .dockerignore        │ Exclude target/, .idea/, etc. from build context                           │
+  ├─────────────────────────┼────────────────────────────────────────────────────────────────────────────┤
+  │ 7x application-docker.* │ Spring profile overriding localhost → Docker container hostnames           │
+  └─────────────────────────┴────────────────────────────────────────────────────────────────────────────┘
+
+  Modified (2 files):
+
+  ┌──────────────────────────┬─────────────────────────────────────────────────────────────────┐
+  │           File           │                             Change                              │
+  ├──────────────────────────┼─────────────────────────────────────────────────────────────────┤
+  │ GatewayRoutesConfig.java │ @Value with localhost fallback instead of hardcoded URIs        │
+  ├──────────────────────────┼─────────────────────────────────────────────────────────────────┤
+  │ docker-compose.yml       │ 7 microservices with profiles: ["app"], health-based depends_on │
+  └──────────────────────────┴─────────────────────────────────────────────────────────────────┘
+
+  Usage:
+  # Infra only (unchanged behavior)
+  docker compose up -d
+
+  # Everything (infra + all services)
+  docker compose --profile app up -d --build
+  # or
+  make up-build
+
+  # Check status
+  make ps                      
