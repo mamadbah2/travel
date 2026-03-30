@@ -1,6 +1,6 @@
 import { Component, input } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { ReviewResponse } from '../../../../shared/models/api.models';
+import { FeedbackResponse } from '../../../../shared/models/api.models';
 
 @Component({
   selector: 'app-review-list',
@@ -9,7 +9,7 @@ import { ReviewResponse } from '../../../../shared/models/api.models';
   styleUrl: './review-list.component.css',
 })
 export class ReviewListComponent {
-  readonly reviews = input.required<ReviewResponse[]>();
+  readonly reviews = input.required<FeedbackResponse[]>();
   readonly averageRating = input(0);
 
   readonly Math = Math;

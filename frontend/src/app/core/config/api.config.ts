@@ -56,11 +56,12 @@ export const ApiConfig = {
     query: `${BASE}/api/v1/search`,
     byId: (id: string) => `${BASE}/api/v1/search/${id}`,
   },
-  reviews: {
-    byTravel: (id: string) => `${BASE}/api/v1/reviews/travel/${id}`,
-    byTraveler: (id: string) => `${BASE}/api/v1/reviews/traveler/${id}`,
-    create: `${BASE}/api/v1/reviews`,
-    list: `${BASE}/api/v1/reviews`,
+  feedbacks: {
+    byTravel: (id: string) => `${BASE}/api/v1/feedbacks/travel/${id}`,
+    me: `${BASE}/api/v1/feedbacks/me`,
+    create: `${BASE}/api/v1/feedbacks`,
+    update: (id: number) => `${BASE}/api/v1/feedbacks/${id}`,
+    delete: (id: number) => `${BASE}/api/v1/feedbacks/${id}`,
   },
   reports: {
     create: `${BASE}/api/v1/reports`,

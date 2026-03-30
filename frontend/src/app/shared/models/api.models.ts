@@ -218,22 +218,27 @@ export interface NotificationResponse {
   updatedAt: string;
 }
 
-// ===== Reviews =====
+// ===== Feedbacks =====
 
-export interface ReviewResponse {
-  id: string;
-  travelId: string;
+export interface FeedbackResponse {
+  id: number;
   travelerId: string;
-  travelerName: string;
+  travelId: string;
+  travelTitle: string;
   rating: number;
   comment: string;
   createdAt: string;
 }
 
-export interface CreateReviewRequest {
+export interface CreateFeedbackRequest {
   travelId: string;
   rating: number;
   comment: string;
+}
+
+export interface UpdateFeedbackRequest {
+  rating?: number;
+  comment?: string;
 }
 
 // ===== Reports =====

@@ -7,7 +7,7 @@ import {
   SearchResultResponse,
   AuthResponse,
   PageResponse,
-  ReviewResponse,
+  FeedbackResponse,
   ReportResponse,
   RecommendationResponse,
 } from '../../shared/models/api.models';
@@ -526,15 +526,15 @@ const MOCK_NOTIFICATIONS: NotificationResponse[] = [
 
 // ===== Reviews =====
 
-const MOCK_REVIEWS: ReviewResponse[] = [
-  { id: 'r1', travelId: 't1', travelerId: 'u3', travelerName: 'Cheikh Diop', rating: 5, comment: 'Absolutely magical experience! The desert camp under the stars was unforgettable. The guides were incredibly knowledgeable and friendly.', createdAt: '2026-03-20T10:00:00Z' },
-  { id: 'r2', travelId: 't1', travelerId: 'u4', travelerName: 'Aisha Mbaye', rating: 4, comment: 'Great trip overall. Fes medina was a highlight. Only wish we had more time in Chefchaouen.', createdAt: '2026-03-18T14:00:00Z' },
-  { id: 'r3', travelId: 't7', travelerId: 'u8', travelerName: 'Maria Garcia', rating: 5, comment: 'The Santorini sunset sailing was the best experience of my life. Highly recommend this trip!', createdAt: '2026-03-22T11:00:00Z' },
-  { id: 'r4', travelId: 't9', travelerId: 'u10', travelerName: 'Omar Hassan', rating: 5, comment: 'Seeing the Great Migration was a dream come true. The hot air balloon ride was worth every penny.', createdAt: '2026-03-25T08:00:00Z' },
-  { id: 'r5', travelId: 't3', travelerId: 'u8', travelerName: 'Maria Garcia', rating: 4, comment: 'Dakar is so vibrant! The Gorée Island visit was very moving. Food was incredible everywhere.', createdAt: '2026-03-15T16:00:00Z' },
-  { id: 'r6', travelId: 't5', travelerId: 'u4', travelerName: 'Aisha Mbaye', rating: 5, comment: 'Japan exceeded all expectations. The ryokan experience and tea ceremony were perfectly curated.', createdAt: '2026-03-12T09:00:00Z' },
-  { id: 'r7', travelId: 't1', travelerId: 'u10', travelerName: 'Omar Hassan', rating: 3, comment: 'Good trip but the bus transfers were quite long. Desert camp was amazing though.', createdAt: '2026-03-19T12:00:00Z' },
-  { id: 'r8', travelId: 't7', travelerId: 'u4', travelerName: 'Aisha Mbaye', rating: 4, comment: 'Beautiful islands, great food. The ferry between islands was a nice touch. Mykonos nightlife was fun!', createdAt: '2026-03-21T15:00:00Z' },
+const MOCK_REVIEWS: FeedbackResponse[] = [
+  { id: 1, travelId: 't1', travelerId: 'u3', travelTitle: 'Moroccan Desert Adventure', rating: 5, comment: 'Absolutely magical experience! The desert camp under the stars was unforgettable. The guides were incredibly knowledgeable and friendly.', createdAt: '2026-03-20T10:00:00Z' },
+  { id: 2, travelId: 't1', travelerId: 'u4', travelTitle: 'Moroccan Desert Adventure', rating: 4, comment: 'Great trip overall. Fes medina was a highlight. Only wish we had more time in Chefchaouen.', createdAt: '2026-03-18T14:00:00Z' },
+  { id: 3, travelId: 't7', travelerId: 'u8', travelTitle: 'Greek Island Hopping', rating: 5, comment: 'The Santorini sunset sailing was the best experience of my life. Highly recommend this trip!', createdAt: '2026-03-22T11:00:00Z' },
+  { id: 4, travelId: 't9', travelerId: 'u10', travelTitle: 'Tanzania Safari', rating: 5, comment: 'Seeing the Great Migration was a dream come true. The hot air balloon ride was worth every penny.', createdAt: '2026-03-25T08:00:00Z' },
+  { id: 5, travelId: 't3', travelerId: 'u8', travelTitle: 'Dakar Cultural Immersion', rating: 4, comment: 'Dakar is so vibrant! The Gorée Island visit was very moving. Food was incredible everywhere.', createdAt: '2026-03-15T16:00:00Z' },
+  { id: 6, travelId: 't5', travelerId: 'u4', travelTitle: 'Japan Cherry Blossom', rating: 5, comment: 'Japan exceeded all expectations. The ryokan experience and tea ceremony were perfectly curated.', createdAt: '2026-03-12T09:00:00Z' },
+  { id: 7, travelId: 't1', travelerId: 'u10', travelTitle: 'Moroccan Desert Adventure', rating: 3, comment: 'Good trip but the bus transfers were quite long. Desert camp was amazing though.', createdAt: '2026-03-19T12:00:00Z' },
+  { id: 8, travelId: 't7', travelerId: 'u4', travelTitle: 'Greek Island Hopping', rating: 4, comment: 'Beautiful islands, great food. The ferry between islands was a nice touch. Mykonos nightlife was fun!', createdAt: '2026-03-21T15:00:00Z' },
 ];
 
 // ===== Reports =====
@@ -607,11 +607,11 @@ export const MockData = {
     return MOCK_SUBSCRIPTIONS.filter((s) => s.travelId === travelId);
   },
 
-  reviewsByTravel(travelId: string): ReviewResponse[] {
+  reviewsByTravel(travelId: string): FeedbackResponse[] {
     return MOCK_REVIEWS.filter((r) => r.travelId === travelId);
   },
 
-  reviewsByTraveler(travelerId: string): ReviewResponse[] {
+  reviewsByTraveler(travelerId: string): FeedbackResponse[] {
     return MOCK_REVIEWS.filter((r) => r.travelerId === travelerId);
   },
 

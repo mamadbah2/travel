@@ -17,9 +17,9 @@
       <div class="border-b border-[#dbd3d8]/20 pb-4 last:border-0">
         <div class="flex items-center gap-2 mb-1">
           <div class="w-7 h-7 rounded-full bg-[#d8b4a0] flex items-center justify-center text-xs font-bold text-white">
-            {{ review.travelerName.split(' ').map(n => n[0]).join('') }}
+            T
           </div>
-          <span class="text-sm font-medium text-[#223843]">{{ review.travelerName }}</span>
+          <span class="text-sm font-medium text-[#223843]">Traveler</span>
           <div class="flex ml-1">
             @for (filled of starsArray(review.rating); track $index) {
               <span class="text-sm" [class]="filled ? 'text-amber-400' : 'text-[#dbd3d8]'">&#9733;</span>

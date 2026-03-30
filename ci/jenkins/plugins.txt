@@ -1,0 +1,6 @@
+workflow-aggregator
+configuration-as-code
+sonar
+git
+pipeline-stage-view
+job-dsl

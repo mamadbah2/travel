@@ -1,0 +1,38 @@
+# ================================================================
+#  Jenkins Configuration as Code (JCasC)
+# ================================================================
+
+jenkins:
+  systemMessage: "Jenkins CI — Travel Management System"
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "admin"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+  numExecutors: 2
+
+unclassified:
+  sonarGlobalConfiguration:
+    buildWrapperEnabled: true
+    installations:
+      - name: "SonarQube"
+        serverUrl: "http://sonarqube:9000"
+        triggers:
+          skipScmCause: false
+          skipUpstreamCause: false
+
+jobs:
+  - script: |
+      pipelineJob('travel-ci') {
+        definition {
+          cps {
+            script(new File('/workspace/travel/Jenkinsfile').text)
+            sandbox(true)
+          }
+        }
+        description('Pipeline CI — Build & analyse SonarQube du projet Travel')
+      }

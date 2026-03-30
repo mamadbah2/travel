@@ -8,4 +8,6 @@ gateway:
     auth-service-uri: http://auth-service:8081
     travel-service-uri: http://travel-service:8082
     payment-service-uri: http://payment-service:8083
+    notification-service-uri: http://notification-service:8084
+    search-service-uri: http://search-service:8085
     rec-service-uri: http://rec-service:8086

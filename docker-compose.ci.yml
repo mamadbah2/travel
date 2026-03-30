@@ -1,0 +1,99 @@
+# ================================================================
+#  Stack CI — Jenkins + SonarQube
+#  Usage: docker compose -f docker-compose.ci.yml up -d --build
+# ================================================================
+
+services:
+
+  # ==================== PostgreSQL pour SonarQube ====================
+  sonar-db:
+    image: postgres:16-alpine
+    container_name: ci-sonar-db
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+      POSTGRES_DB: sonarqube
+    volumes:
+      - sonar_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sonar -d sonarqube"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ==================== SonarQube 10 Community ====================
+  sonarqube:
+    image: sonarqube:10-community
+    container_name: ci-sonarqube
+    depends_on:
+      sonar-db:
+        condition: service_healthy
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://sonar-db:5432/sonarqube
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: sonar
+      SONAR_FORCEAUTHENTICATION: "false"
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9000/api/system/status | grep -q '\"status\":\"UP\"'"]
+      interval: 15s
+      timeout: 10s
+      retries: 30
+      start_period: 120s
+
+  # ==================== SonarQube Init (Quality Gate souple) ====================
+  sonar-init:
+    image: curlimages/curl:8.7.1
+    container_name: ci-sonar-init
+    user: "0"
+    depends_on:
+      sonarqube:
+        condition: service_healthy
+    volumes:
+      - ./ci/sonar/sonar-init.sh:/sonar-init.sh:ro
+      - sonarqube_data:/opt/sonarqube/data
+    entrypoint: ["/bin/sh", "/sonar-init.sh"]
+    restart: "no"
+
+  # ==================== Jenkins ====================
+  jenkins:
+    build:
+      context: ./ci/jenkins
+      dockerfile: Dockerfile
+    container_name: ci-jenkins
+    depends_on:
+      sonarqube:
+        condition: service_healthy
+      sonar-init:
+        condition: service_completed_successfully
+    ports:
+      - "8888:8080"
+      - "50000:50000"
+    environment:
+      JAVA_OPTS: >-
+        -Djenkins.install.runSetupWizard=false
+        -Dcasc.jenkins.config=/var/jenkins_home/casc_configs/jenkins.yml
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - ./ci/jenkins/jenkins.yml:/var/jenkins_home/casc_configs/jenkins.yml:ro
+      - ./:/workspace/travel:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - sonarqube_data:/opt/sonarqube/data:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/login || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 120s
+
+volumes:
+  sonar_db_data:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
+  jenkins_home:

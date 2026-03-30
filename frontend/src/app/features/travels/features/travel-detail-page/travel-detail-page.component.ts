@@ -8,7 +8,7 @@ import { SubscriptionService } from '../../../subscriptions/data-access/subscrip
 import { ReviewService } from '../../../reviews/data-access/review.service';
 import { ReviewListComponent } from '../../../reviews/ui/review-list/review-list.component';
 import { ReviewFormComponent } from '../../../reviews/ui/review-form/review-form.component';
-import { ReviewResponse, UserResponse } from '../../../../shared/models/api.models';
+import { FeedbackResponse, UserResponse } from '../../../../shared/models/api.models';
 import { HttpClient } from '@angular/common/http';
 import { ApiConfig } from '../../../../core/config/api.config';
 import { firstValueFrom } from 'rxjs';
@@ -33,7 +33,7 @@ export class TravelDetailPageComponent {
 
   readonly isTraveler = computed(() => this.authService.hasRole('TRAVELER'));
   readonly subscribing = computed(() => false);
-  readonly reviews = signal<ReviewResponse[]>([]);
+  readonly reviews = signal<FeedbackResponse[]>([]);
   readonly averageRating = signal(0);
   readonly reviewSubmitting = signal(false);
   readonly manager = signal<UserResponse | null>(null);

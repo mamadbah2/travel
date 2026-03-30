@@ -15,20 +15,7 @@ spring:
         backend: kv
         default-context: api-gateway
       # Routes are configured in GatewayRoutesConfig.java
-
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowed-origins: "*"
-            allowed-methods: 
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - PATCH
-              - OPTIONS
-            allowed-headers: "*"
-            allow-credentials: false
+      # CORS is handled by SecurityConfig.corsConfigurationSource()
 
 
 # JWT secret (shared HMAC key, overridden by Vault)
